@@ -1,6 +1,7 @@
-
 import java.net.*;
 import java.io.*;
+import org.json.simple.*;
+import org.apache.commons.cli.*;
 
 public class TCPClient {
    public static void main (String args[]) {
@@ -11,7 +12,7 @@ public class TCPClient {
      s = new Socket(args[1], serverPort);  
      System.out.println("Connection Established");
      DataInputStream in = new DataInputStream( s.getInputStream());
-     DataOutputStream out =new DataOutputStream( s.getOutputStream());
+     DataOutputStream out = new DataOutputStream( s.getOutputStream());
      System.out.println("Sending data"); 
      out.writeUTF(args[0]);     // UTF is a string encoding see Sn. 4.4
      String data = in.readUTF();   // read a line of data from the stream
