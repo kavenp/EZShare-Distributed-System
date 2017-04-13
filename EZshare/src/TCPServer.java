@@ -6,7 +6,7 @@ import org.apache.commons.cli.*;
 public class TCPServer {
    
     public static void main (String args[]) {
-    	int serverPort = 7899;  // the server port
+    	int serverPort = 3780;  // the server port
     	String HostnamePort;
     	try {
         	String serverIP = InetAddress.getLocalHost().getHostName();
@@ -54,6 +54,17 @@ class Connection extends Thread {
     	try {           // an echo server
     		System.out.println("server reading data");
     		String data = in.readUTF();  // read a line of data from the stream
+    		// analysis the Json package and do the service
+    		JsonParser jsonParser = new JsonParser();
+			JsonObject jsonObject = jsonParser.parse(data).getAsJsonObject();
+			String command = jsonObject.get("command").getAsString();
+			
+    		
+			
+			if(command.equals("QUERY")){
+				data = "123";
+				System.out.println("!!!!!");
+			}
     		System.out.println("server writing data");
     		out.writeUTF(data);
     	}catch (EOFException e){

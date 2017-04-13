@@ -1,6 +1,9 @@
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
+import dao.Resource;
+import dao.Tuple;
+
 public class ResourceStorage {
 	private ConcurrentHashMap<Tuple, Resource> resources 
 		= new ConcurrentHashMap<Tuple, Resource>();

@@ -1,3 +1,4 @@
+package dao;
 
 public class Tuple<X,Y,Z> {
     public final X x;
