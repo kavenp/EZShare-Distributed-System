@@ -26,6 +26,7 @@ public class TCPClient {
 		Socket s = null;
 		int serverPort = 3780;
 		String ipAddress = null;
+		ArrayList<Server> exchangeServers = new ArrayList<Server>();
 		try {
 			ipAddress = InetAddress.getLocalHost().getHostName();
 		} catch (UnknownHostException e2) {
@@ -62,14 +63,15 @@ public class TCPClient {
 					uri, channel, owner);
 			Gsonable sendResource = null;
 			
-			ArrayList<Server> exchangeServers = new ArrayList<Server>();
-			String serverList = cl.getOptionValue("servers");
-			String[] servers = serverList.split(",");
-			for(String eachServer : servers){
-				String hostname = eachServer.split(":")[0];
-				String port = eachServer.split(":")[1];
-				Server newServer = new Server(hostname, port);
-				exchangeServers.add(newServer);
+			if (cl.hasOption("servers")) {
+				String serverList = cl.getOptionValue("servers");
+				String[] servers = serverList.split(",");
+				for(String eachServer : servers){
+					String hostname = eachServer.split(":")[0];
+					String port = eachServer.split(":")[1];
+					Server newServer = new Server(hostname, port);
+					exchangeServers.add(newServer);
+				}
 			}
 			
 			if (cl.hasOption("help")) {

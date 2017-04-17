@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="EZshare/src"/>
+	<classpathentry kind="lib" path="EZshare/lib/commons-cli-1.4.jar"/>
+	<classpathentry kind="lib" path="EZshare/lib/gson-2.8.0-javadoc.jar"/>
+	<classpathentry kind="lib" path="EZshare/lib/gson-2.8.0-sources.jar"/>
+	<classpathentry kind="lib" path="EZshare/lib/gson-2.8.0.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
