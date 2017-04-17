@@ -36,7 +36,8 @@ public class TCPClient {
 		CLIOptions cliOptions = new CLIOptions();
 		Options options = cliOptions.createOptions();
 		DefaultParser parser = new DefaultParser();
-		Gson gson = new Gson();
+		// Gson builder that includes null values
+		Gson gson = new GsonBuilder().serializeNulls().create();
 		String clJson = null;
 		CommandLine cl;
 		try {
@@ -100,8 +101,11 @@ public class TCPClient {
 			if(cl.hasOption("exchange")){
 				sendResource = new ExchangeResource(exchangeServers);
 			}
-			
-			clJson = sendResource.toJson(gson);
+			try {
+				clJson = sendResource.toJson(gson);
+			} catch (NullPointerException e) {
+				System.out.println("No arguments given");
+			}
 
 		} catch (ParseException e1) {
 			// TODO Auto-generated catch block
@@ -115,13 +119,15 @@ public class TCPClient {
 			DataInputStream in = new DataInputStream(s.getInputStream());
 			DataOutputStream out = new DataOutputStream(s.getOutputStream());
 			System.out.println("Sending data\n"+clJson);
-			
+			/*
 			JsonParser jsonParser = new JsonParser();
 			JsonObject jsonObject = jsonParser.parse(clJson).getAsJsonObject();
 			String command = jsonObject.get("command").getAsString();
 			
 			System.out.println(command);
+			*/
 			out.writeUTF(clJson); // UTF is a string encoding see Sn. 4.4
+			out.flush();
 			while(in.readUTF() != null){
 				String data = in.readUTF(); // read a line of data from the stream
 				System.out.println("Received: " + data);

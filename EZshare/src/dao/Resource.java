@@ -13,7 +13,7 @@ public class Resource {
 	private String uri = "";
 	private String channel = "";
 	private String owner = "";
-	private String ezserver ;
+	private String ezserver = null;
 	
 	public Resource() {
 		super();
@@ -26,7 +26,7 @@ public class Resource {
 		this.uri = uri;
 		this.channel = channel;
 		this.owner = owner;
-		this.ezserver = "";
+		this.ezserver = null;
 	}
 	
 	public Tuple<String, String, String> getResourceKey() {
