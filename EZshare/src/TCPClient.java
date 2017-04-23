@@ -128,10 +128,10 @@ public class TCPClient {
 			*/
 			out.writeUTF(clJson); // UTF is a string encoding see Sn. 4.4
 			out.flush();
-			//while(true){
-			String data = in.readUTF(); // read a line of data from the stream
-			System.out.println("Received: " + data);
-			//}
+			while(true) {
+				String data = in.readUTF(); // read a line of data from the stream
+				System.out.println("Received: " + data);
+			}
 		} catch (UnknownHostException e) {
 			System.out.println("Socket:" + e.getMessage());
 		} catch (EOFException e) {

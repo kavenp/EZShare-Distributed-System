@@ -138,17 +138,11 @@ public class TCPServer {
 		    				//Invalid command handle here
 		    				break;
 		    		}
+		    		client.close();
 				}
 			}
     	} catch (IOException e) {
 			e.printStackTrace();
-		}
-		if (client != null) {
-			try {
-				client.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
 		}
 	}
 }
