@@ -2,7 +2,7 @@
 
 import org.apache.commons.cli.*;
 
-public class CLIOptions {
+public class ClientCLIOptions {
 	
 	public Options createOptions(){
 		Options options = new Options();  
