@@ -28,12 +28,20 @@ public class TCPServer {
     	//set default first, overwrite only when option flag is set
     	//System.setProperty("sun.net.spi.nameservice.nameservers", "8.8.8.8");
     	//System.setProperty("sun.net.spi.nameservice.provider.1", "dns,sun");
+    	//initialize connection tracker
+    	ConnectionTracker tracker = new ConnectionTracker(connectionLimit);
     	//setup command line options parser
     	ServerCLIOptions cliOptions = new ServerCLIOptions();
 		Options options = cliOptions.createOptions();
 		DefaultParser parser = new DefaultParser();
-		//initialize socket factory
 		ServerSocketFactory sock_factory = ServerSocketFactory.getDefault();
+		//initialize socket factory
+		ServerRecords servers = new ServerRecords();
+		//initialize empty server records
+		TaskManager manager = new TaskManager(tracker);
+		//initialize task manager for timed tasks
+		manager.startTasks();
+		//starts timer for timed tasks, will run cleanTracker and send exchange command (still need to implement exchange sending)
 		CommandLine cl;
     	try {
     		cl = parser.parse(options, args);
@@ -70,12 +78,16 @@ public class TCPServer {
 			while(true){
 				Socket client = server.accept();
 				counter++;
-				System.out.println("Client "+counter+" connected.");
-				
-				
-				// Start a new thread for a connection
-				Thread t = new Thread(() -> clientConnection(client));
-				t.start();
+				if (tracker.checkConnection(client.getRemoteSocketAddress().toString())) {
+					//passes tracker check for interval
+					System.out.println("Client "+counter+" connected.");
+					// Start a new thread for a connection
+					Thread t = new Thread(() -> clientConnection(client));
+					t.start();
+				} else {
+					//has tried to connect within interval, reject
+					client.close();
+				}
 			}
 			
 		} catch (IOException e) {
@@ -142,7 +154,7 @@ public class TCPServer {
 				}
 			}
     	} catch (IOException e) {
-			e.printStackTrace();
+			//e.printStackTrace();
 		}
 	}
 }
