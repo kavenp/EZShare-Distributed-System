@@ -34,8 +34,14 @@ public class TCPServer {
     	ServerCLIOptions cliOptions = new ServerCLIOptions();
 		Options options = cliOptions.createOptions();
 		DefaultParser parser = new DefaultParser();
-		//initialize socket factory
 		ServerSocketFactory sock_factory = ServerSocketFactory.getDefault();
+		//initialize socket factory
+		ServerRecords servers = new ServerRecords();
+		//initialize empty server records
+		TaskManager manager = new TaskManager(tracker);
+		//initialize task manager for timed tasks
+		manager.startTasks();
+		//starts timer for timed tasks, will run cleanTracker and send exchange command (still need to implement exchange sending)
 		CommandLine cl;
     	try {
     		cl = parser.parse(options, args);
