@@ -115,6 +115,7 @@ public class TCPServer {
 			System.out.println("Starting the EZShare Server");
 			System.out.println("using secret: "+ serverSecret);
 			System.out.println("using advertised hostname: "+ serverHostname);
+			System.out.println("using connection interval: "+ connectionLimit);
 			System.out.println("bound to port: "+ serverPort);
 			System.out.println("started");
 			
@@ -122,7 +123,8 @@ public class TCPServer {
 			while(true){
 				Socket client = server.accept();
 				counter++;
-				if (tracker.checkConnection(client.getRemoteSocketAddress().toString())) {
+				InetSocketAddress endpoint = (InetSocketAddress) client.getRemoteSocketAddress();
+				if (tracker.checkConnection(endpoint.getHostString())) {
 					//passes tracker check for interval
 					System.out.println("Client "+counter+" connected.");
 					// Start a new thread for a connection
@@ -130,6 +132,7 @@ public class TCPServer {
 					t.start();
 				} else {
 					//has tried to connect within interval, reject
+					System.out.println("Client " + counter + " Tried to connect within connection interval, rejected.");
 					client.close();
 				}
 			}

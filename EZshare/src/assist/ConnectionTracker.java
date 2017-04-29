@@ -42,8 +42,7 @@ public class ConnectionTracker {
 			}
 		} else {
 			//new connection, store and track it
-			long liveUntil = updateTime();
-			cache.put(ip, liveUntil);
+			addConnection(ip);
 			return true;
 		}
 	}
