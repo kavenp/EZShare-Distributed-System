@@ -50,7 +50,7 @@ public class TCPServer {
     	//generate a default secret
     	serverSecret = secretGenerator.genString();
     	
-    	serverSecret = "zj7acor85pg2kc8gtktfuquara";
+    	//serverSecret = "zj7acor85pg2kc8gtktfuquara";
     	
     	int counter = 0;
     	int exchangeT = defaultExchangeT;
@@ -64,9 +64,6 @@ public class TCPServer {
     	resourceStroage = new ResourceStorage();
     	serverRecords = new ServerRecords();
     	
-    	
-    	//initialize connection tracker
-    	ConnectionTracker tracker = new ConnectionTracker(connectionLimit);
     	//setup command line options parser
     	ServerCLIOptions cliOptions = new ServerCLIOptions();
 		Options options = cliOptions.createOptions();
@@ -76,11 +73,6 @@ public class TCPServer {
 		ServerSocketFactory sock_factory = ServerSocketFactory.getDefault();
 		//initialize empty server records
 		ServerRecords servers = new ServerRecords();
-		//initialize task manager for timed tasks
-		TaskManager manager = new TaskManager(tracker);
-		//starts timer for timed tasks, will run cleanTracker and send exchange command (still need to implement exchange sending)
-		manager.startTasks();
-		
 		
 		CommandLine cl;
     	try {
@@ -103,7 +95,7 @@ public class TCPServer {
         	//overwrite hostname to advertisedhostname if flagged
         	serverHostname = cl.getOptionValue("advertisedhostname", defaultServerHostname);
         	//set secret if flagged
-        	serverSecret = cl.getOptionValue("secret", "zj7acor85pg2kc8gtktfuquara");
+        	serverSecret = cl.getOptionValue("secret", serverSecret);
         	HostnamePort = serverHostname + ":" + Integer.toString(serverPort);
         	//returns ezserver string of local hostname and port no.
 	    }
@@ -111,13 +103,22 @@ public class TCPServer {
 	    {
 	    	e.printStackTrace();
 	    }
-    	try(ServerSocket server = sock_factory.createServerSocket(serverPort)){
-			System.out.println("Starting the EZShare Server");
+    	
+    	//initialize classes that depend on possible command line arguments here
+    	//initialize connection tracker
+    	ConnectionTracker tracker = new ConnectionTracker(connectionLimit);
+		//initialize task manager for timed tasks
+		TaskManager manager = new TaskManager(tracker, exchangeT);
+		//starts timer for timed tasks, will run cleanTracker and send exchange command (still need to implement exchange sending)
+		manager.startTasks();
+    	
+		try(ServerSocket server = sock_factory.createServerSocket(serverPort)){
+			System.out.println("Starting the EZShare Server.");
 			System.out.println("using secret: "+ serverSecret);
 			System.out.println("using advertised hostname: "+ serverHostname);
-			System.out.println("using connection interval: "+ connectionLimit);
+			System.out.println("using connection interval: "+ connectionLimit + " seconds.");
 			System.out.println("bound to port: "+ serverPort);
-			System.out.println("started");
+			System.out.println("started.");
 			
 			// Wait for connections.
 			while(true){
@@ -132,7 +133,7 @@ public class TCPServer {
 					t.start();
 				} else {
 					//has tried to connect within interval, reject
-					System.out.println("Client " + counter + " Tried to connect within connection interval, rejected.");
+					System.out.println("Client " + counter + ": " + endpoint.getHostString() + " Tried to connect within connection interval, rejected.");
 					client.close();
 				}
 				//self exchange command

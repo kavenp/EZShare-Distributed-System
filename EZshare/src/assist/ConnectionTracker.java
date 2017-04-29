@@ -18,7 +18,6 @@ public class ConnectionTracker {
 	}
 	
 	public void addConnection(String ip) {
-		//times 1000 interval since interval is in seconds
 		long liveUntil = updateTime();
 		cache.put(ip, liveUntil);
 	}
@@ -27,17 +26,21 @@ public class ConnectionTracker {
 		if (cache.containsKey(ip)) {
 			//already has record of this connection stored
 			long expiration = cache.get(ip);
-			if (expiration - System.currentTimeMillis() > 0) {
+			long diff = expiration - System.currentTimeMillis();
+			//System.out.println("Time diff = " + diff);
+			if (diff > 0) {
 				//within interval update interval timer
 				long newLiveUntil = updateTime();
 				//update connection's interval timer for failed connection
 				cache.put(ip, newLiveUntil);
+				//System.out.println("Rejected interval");
 				return false;
 			} else {
 				//it's ok to connect
 				long newLiveUntil = updateTime();
 				//update connection's timer for successful connection
 				cache.put(ip, newLiveUntil);
+				//System.out.println("Updated timer.");
 				return true;
 			}
 		} else {
@@ -63,6 +66,9 @@ public class ConnectionTracker {
 	}
 	
 	private long updateTime() {
-		return System.currentTimeMillis() + interval * 1000;
+		long newTime = System.currentTimeMillis() + interval * 1000;
+		//System.out.println("Current time: " + System.currentTimeMillis());
+		//System.out.println("Updated time to: " + newTime);
+		return newTime;
 	}
 }
