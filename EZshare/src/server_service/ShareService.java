@@ -34,7 +34,7 @@ public class ShareService extends Service {
 
 		try {
 			checkResource(resource);
-			BufferedReader bReader =new BufferedReader(new FileReader(new File(resource.getUri()))); 
+			BufferedReader bReader =new BufferedReader(new FileReader(new File(URI.create(resource.getUri()).getPath()))); 
 			
 			if(resourceStroage.checkResource(resource.getResourceKey()) == true){
 				resourceStroage.updateResource(resource);
@@ -79,9 +79,9 @@ public class ShareService extends Service {
 		/*if(Pattern.matches(regEx, resource.getUri()) == false){
 			throw new MyException("incorrect file uri format");
 		}*/
-		/*if ((!(URI.create(resource.getUri()).getScheme().equals("file"))) && !(resource.getUri().equals("")) ) {
+		if ((!(URI.create(resource.getUri()).getScheme().equals("file"))) && !(resource.getUri().equals("")) ) {
 			throw new MyException("missing resource and//or secret");
-		}*/
+		}
 		if (resource.getUri() != "" && !URI.create(resource.getUri()).isAbsolute()) {
 			throw new MyException ("invalid resource");
 		}
