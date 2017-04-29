@@ -72,8 +72,6 @@ public class Server {
 		
 		//initialize socket factory
 		ServerSocketFactory sock_factory = ServerSocketFactory.getDefault();
-		//initialize empty server records
-		ServerRecords servers = new ServerRecords();
 		
 		CommandLine cl;
     	try {
@@ -109,7 +107,7 @@ public class Server {
     	//initialize connection tracker
     	ConnectionTracker tracker = new ConnectionTracker(connectionLimit);
 		//initialize task manager for timed tasks
-		TaskManager manager = new TaskManager(tracker, exchangeT);
+		TaskManager manager = new TaskManager(tracker, exchangeT, serverRecords);
 		//starts timer for timed tasks, will run cleanTracker and send exchange command (still need to implement exchange sending)
 		manager.startTasks();
     	
@@ -137,9 +135,6 @@ public class Server {
 					System.out.println("Client " + counter + ": " + endpoint.getHostString() + " Tried to connect within connection interval, rejected.");
 					client.close();
 				}
-				//self exchange command
-				Timer timer = new Timer();  
-		        timer.schedule(TCPServer.new MyTask(), 1000*exchangeT, 1000*exchangeT);
 			}
 			
 		} catch (IOException e) {
@@ -259,40 +254,5 @@ public class Server {
 			//e.printStackTrace();
 		} 
 	}
-    class MyTask extends TimerTask{
 
-		@Override
-		public void run() {
-			// TODO Auto-generated method stub
-			Random r = new Random(System.currentTimeMillis());
-			ArrayList<ServerInfo> exchangeServers = serverRecords.getServers();
-			ServerInfo exchangeServer = exchangeServers.get(r.nextInt(exchangeServers.size()));
-			
-			ExchangeResource resource = new ExchangeResource(exchangeServers);
-			Socket s = null;
-			try{
-				s = new Socket(exchangeServer.getHostname(), exchangeServer.getPort());
-				System.out.println("Connection Established");
-				
-				DataOutputStream out = new DataOutputStream(s.getOutputStream());
-				Gson gson = new GsonBuilder().serializeNulls().create();
-
-				out.writeUTF(resource.toJson(gson)); // UTF is a string encoding see Sn. 4.4
-				
-				out.flush();
-				
-			}catch(IOException e){
-				System.out.println(e.getMessage());
-				serverRecords.rmServer(exchangeServer);
-			}finally {
-				if (s != null)
-					try {
-						s.close();
-					} catch (IOException e) {
-						System.out.println("close:" + e.getMessage());
-					}
-			}
-		}
-		
-	}
 }

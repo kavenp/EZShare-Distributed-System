@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.URI;
 import java.util.regex.Pattern;
 
 import com.google.gson.Gson;
@@ -51,7 +52,7 @@ public class ShareService extends Service {
 		} catch (NullPointerException e){
 			response = new ServerErrorResponse("missing uri");
 		} catch (FileNotFoundException e){
-			response = new ServerErrorResponse("not found this file in the file system");
+			response = new ServerErrorResponse("missing resource and//or secret.");
 		} catch (MyException e) {
 			// TODO Auto-generated catch block
 			response = new ServerErrorResponse(e.getMessage());
@@ -76,7 +77,13 @@ public class ShareService extends Service {
 			throw new MyException("cannot share resource");
 		}
 		if(Pattern.matches(regEx, resource.getUri()) == false){
-			throw new MyException("incorrect file uir format");
+			throw new MyException("incorrect file uri format");
+		}
+		if ((resource.getUri() != "" && !(URI.create(resource.getUri()).getScheme()).equals("file"))) {
+			throw new MyException("missing resource and//or secret");
+		}
+		if (resource.getUri() != "" && !URI.create(resource.getUri()).isAbsolute()) {
+			throw new MyException ("invalid resource");
 		}
 		if(resource.getUri().contains("\0")){
 			throw new MyException("invalid resource");

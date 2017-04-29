@@ -45,10 +45,10 @@ public class ExchangeService extends Service {
 				// TODO Auto-generated catch block	
 			}
 		}
-		System.out.println("!!!!!1");
-		for(ServerInfo s : serverRecords.getServers()){
+		//System.out.println("!!!!!1");
+		/*for(ServerInfo s : serverRecords.getServers()){
 			System.out.println(s.getPort());
-		}
+		}*/
 		response = new ServerSuccessResponse();
 		try {
 			out.writeUTF(response.toJson(gson));

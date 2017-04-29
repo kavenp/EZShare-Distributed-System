@@ -110,8 +110,7 @@ public class QueryService extends Service{
 	
 	}
 	
-	public void checkResource(Resource resource) throws MyException{
-		
+	public void checkResource(Resource resource) throws MyException {
 		if(resource.getUri().contains("\0")){
 			throw new MyException("invalid resource");
 		}

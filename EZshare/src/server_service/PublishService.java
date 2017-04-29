@@ -3,6 +3,7 @@ package server_service;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.regex.Pattern;
+import java.net.URI;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -52,6 +53,12 @@ public class PublishService extends Service {
 
 		if (resource.getUri() == null) {
 			throw new MyException("cannot publish resource");
+		}
+		if (resource.getUri() != "" && !URI.create(resource.getUri()).isAbsolute()) {
+			throw new MyException ("invalid resource");
+		}
+		if ((resource.getUri() != "" && (URI.create(resource.getUri()).getScheme()).equals("file"))) {
+			throw new MyException("missing resource");
 		}
 		if (Pattern.matches(regEx, resource.getUri()) == true) {
 			throw new MyException("invalid resource");
