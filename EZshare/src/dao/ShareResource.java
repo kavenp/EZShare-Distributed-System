@@ -12,7 +12,7 @@ public class ShareResource extends Gsonable{
 	private Resource resource;
 	public ShareResource(String secret, Resource resource) {
 		super();
-		this.command = "Share";
+		this.command = "SHARE";
 		this.secret = secret;
 		this.resource = resource;
 	}

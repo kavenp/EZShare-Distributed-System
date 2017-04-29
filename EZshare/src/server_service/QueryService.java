@@ -66,8 +66,19 @@ public class QueryService extends Service{
 			
 			for(Resource eachResource : matchResources){
 				try {
-					eachResource.setEzserver(HostnamePort);
-					out.writeUTF(eachResource.toJson(gson));
+					Resource newResource = new Resource();
+					newResource.setChannel(eachResource.getChannel());
+					newResource.setDescription(eachResource.getDescription());
+					newResource.setEzserver(HostnamePort);
+					newResource.setName(eachResource.getName());
+					newResource.setTags(eachResource.getTags());
+					newResource.setUri(eachResource.getUri());
+					if(eachResource.getOwner() != ""){
+						newResource.setOwner("*");
+					}else{
+						newResource.setOwner("");
+					}
+					out.writeUTF(newResource.toJson(gson));
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();

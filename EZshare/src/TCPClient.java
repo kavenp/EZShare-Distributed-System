@@ -1,5 +1,6 @@
 import java.net.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.io.*;
 import com.google.gson.*;
 
@@ -15,7 +16,6 @@ import dao.Server;
 import dao.ShareResource;
 
 import org.apache.commons.cli.*;
-
 public class TCPClient {
 
 	public static final String defaultIpAddress = "127.0.0.1";
@@ -135,6 +135,57 @@ public class TCPClient {
 			
 			out.flush();
 			
+			
+			if(cl.hasOption("fetch")){
+				String message1 = in.readUTF();
+				System.out.println("Received: " + message1);
+				
+				String resource = in.readUTF();
+				System.out.println("Received: " + resource);
+				
+				JsonParser jsonParser = new JsonParser();
+				JsonObject command = (JsonObject) jsonParser.parse(resource);
+				
+				String message2 = in.readUTF();
+				System.out.println("Received: " + message2);
+			
+				String fileName = "donwload.jpg";
+				
+				RandomAccessFile downloadingFile = new RandomAccessFile(fileName, "rw");
+				
+				// Find out how much size is remaining to get from the server.
+				long fileSizeRemaining = command.get("resourceSize").getAsLong();
+				
+				int chunkSize = setChunkSize(fileSizeRemaining);
+				
+				// Represents the receiving buffer
+				byte[] receiveBuffer = new byte[chunkSize];
+				
+				// Variable used to read if there are remaining size left to read.
+				int num;
+				
+				System.out.println("Downloading "+fileName+" of size "+fileSizeRemaining);
+				while((num=in.read(receiveBuffer))>0){
+					// Write the received bytes into the RandomAccessFile
+					downloadingFile.write(Arrays.copyOf(receiveBuffer, num));
+					
+					// Reduce the file size left to read..
+					fileSizeRemaining-=num;
+					
+					// Set the chunkSize again
+					chunkSize = setChunkSize(fileSizeRemaining);
+					receiveBuffer = new byte[chunkSize];
+					
+					// If you're done then break
+					if(fileSizeRemaining==0){
+						break;
+					}
+				}
+				System.out.println("File received!");
+				downloadingFile.close();
+			}
+			
+			
 			while(true) {
 				String data = in.readUTF(); // read a line of data from the stream
 				
@@ -154,5 +205,17 @@ public class TCPClient {
 					System.out.println("close:" + e.getMessage());
 				}
 		}
+	}
+	public static int setChunkSize(long fileSizeRemaining){
+		// Determine the chunkSize
+		int chunkSize=1024*1024;
+		
+		// If the file size remaining is less than the chunk size
+		// then set the chunk size to be equal to the file size.
+		if(fileSizeRemaining<chunkSize){
+			chunkSize=(int) fileSizeRemaining;
+		}
+		
+		return chunkSize;
 	}
 }

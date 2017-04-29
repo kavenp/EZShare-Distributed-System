@@ -43,6 +43,7 @@ public class ResourceStorage {
 	}
 	
 	public Resource getFetchResource(String channel, String uri){
+		System.out.println(channel+"---"+uri);
 		Iterator<Entry<Tuple, Resource>> iter = resources.entrySet().iterator();
 		while (iter.hasNext()) {
 			ConcurrentHashMap.Entry entry = (ConcurrentHashMap.Entry) iter.next();
