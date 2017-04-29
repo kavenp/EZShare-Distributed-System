@@ -62,7 +62,7 @@ public class TaskManager {
 			Socket s = null;
 			try{
 				s = new Socket(exchangeServer.getHostname(), exchangeServer.getPort());
-				System.out.println("Connection Established");
+				//System.out.println("Connection Established");
 				
 				DataOutputStream out = new DataOutputStream(s.getOutputStream());
 				Gson gson = new GsonBuilder().serializeNulls().create();

@@ -51,17 +51,13 @@ public class Server {
     	//generate a default secret
     	serverSecret = secretGenerator.genString();
     	
-    	//serverSecret = "zj7acor85pg2kc8gtktfuquara";
-    	
     	int counter = 0;
     	int exchangeT = defaultExchangeT;
     	int connectionLimit = defaultConnectionLimit;
     	int serverPort = defaultServerPort; 
-    	
+    	boolean debug = false;
     	
     	//set default first, overwrite only when option flag is set
-    	//System.setProperty("sun.net.spi.nameservice.nameservers", "8.8.8.8");
-    	//System.setProperty("sun.net.spi.nameservice.provider.1", "dns,sun");
     	resourceStroage = new ResourceStorage();
     	serverRecords = new ServerRecords();
     	
@@ -87,6 +83,9 @@ public class Server {
     		//overwrite port value if port option is flagged
     		if (cl.hasOption("port")) {
     			serverPort = Integer.parseInt(cl.getOptionValue("port"));
+    		}
+    		if (cl.hasOption("debug")) {
+    			debug = true;
     		}
     		//get default local host name
         	String defaultServerHostname = InetAddress.getLocalHost().getHostName();
@@ -126,13 +125,22 @@ public class Server {
 				InetSocketAddress endpoint = (InetSocketAddress) client.getRemoteSocketAddress();
 				if (tracker.checkConnection(endpoint.getHostString())) {
 					//passes tracker check for interval
-					System.out.println("Client "+counter+" connected.");
+					if (debug) {
+						System.out.println("Client "+counter+" connected.");
+					}
 					// Start a new thread for a connection
-					Thread t = new Thread(() -> clientConnection(client));
-					t.start();
+					if (debug) {	
+						Thread t = new Thread(() -> clientConnection(client, true));
+						t.start();
+					} else {
+						Thread t = new Thread(() -> clientConnection(client, false));
+						t.start();
+					}
 				} else {
 					//has tried to connect within interval, reject
-					System.out.println("Client " + counter + ": " + endpoint.getHostString() + " Tried to connect within connection interval, rejected.");
+					if (debug) {
+						System.out.println("Client " + counter + ": " + endpoint.getHostString() + " Tried to connect within connection interval, rejected.");
+					}
 					client.close();
 				}
 			}
@@ -143,7 +151,7 @@ public class Server {
 		
     }
 	
-    private static void clientConnection(Socket client) {
+    private static void clientConnection(Socket client, boolean debug) {
     	
     	
     	try(Socket clientSocket = client) {
@@ -169,7 +177,9 @@ public class Server {
 		    		try{
 		    			switch (command) {
 		    			case "PUBLISH":
-		    				System.out.println("PUBLISH command: " + jsonString);
+		    				if (debug) {
+		    					System.out.println("PUBLISH command: " + jsonString);
+		    				}
 		    				result = commandObject.get("resource");
 		    				Resource publishResource = gson.fromJson(result, Resource.class);
 		    				
@@ -178,7 +188,9 @@ public class Server {
 		    				break;
 		    			
 		    			case "REMOVE":
-		    				System.out.println("REMOVE command: " + jsonString);
+		    				if (debug) {
+		    					System.out.println("REMOVE command: " + jsonString);
+		    				}
 		    				result = commandObject.get("resource");
 		    				Resource removeResource = gson.fromJson(result, Resource.class);
 		    				service = new RemoveService(resourceStroage, serverRecords);
@@ -187,7 +199,9 @@ public class Server {
 		    				break;
 		    				
 		    			case "SHARE":
-		    				System.out.println("SHARE command: " + jsonString);
+		    				if (debug) {
+		    					System.out.println("SHARE command: " + jsonString);
+		    				}
 		    				String secret = commandObject.get("secret").getAsString();
 		    				if(secret == null){
 		    					throw new MyException("missing secret");
@@ -203,7 +217,9 @@ public class Server {
 		    				break;
 		    				
 		    			case "QUERY":
-		    				System.out.println("QUERY command: " + jsonString);
+		    				if (debug) {
+		    					System.out.println("QUERY command: " + jsonString);
+		    				}
 		    				result = commandObject.get("resourceTemplate");
 		    				boolean relay = commandObject.get("relay").getAsBoolean();
 		    				Resource queryResource = gson.fromJson(result, Resource.class);
@@ -213,7 +229,9 @@ public class Server {
 		    				break;
 		    			
 		    			case "FETCH":
-		    				System.out.println("FETCH command: " + jsonString);
+		    				if (debug) {
+		    					System.out.println("FETCH command: " + jsonString);
+		    				}
 		    				result = commandObject.get("resourceTemplate");
 		    				Resource fetchResource = gson.fromJson(result, Resource.class);
 		    				
@@ -223,10 +241,10 @@ public class Server {
 		    				break;
 		    				
 		    			case "EXCHANGE":
-		    				System.out.println("EXCHANGE command: " + jsonString);
+		    				if (debug) {
+		    					System.out.println("EXCHANGE command: " + jsonString);
+		    				}
 		    				result = commandObject.get("serverList");
-		    				
-		    				
 		    				service = new ExchangeService(resourceStroage, serverRecords);
 		    			    service.response(result, output);
 		    			    

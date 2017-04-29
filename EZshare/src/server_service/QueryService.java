@@ -2,6 +2,7 @@ package server_service;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -9,6 +10,7 @@ import java.util.ArrayList;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import assist.MyException;
@@ -32,6 +34,7 @@ public class QueryService extends Service{
 		Response response = null;
 		Gson gson = new GsonBuilder().serializeNulls().create();
 		ArrayList<Resource> matchResources = new ArrayList<Resource>();
+		int result = 0;
 		
 		try {
 			checkResource(resource);
@@ -49,9 +52,24 @@ public class QueryService extends Service{
 						DataInputStream otherIn = new DataInputStream(s.getInputStream());
 						DataOutputStream otherOut = new DataOutputStream(s.getOutputStream());
 						otherOut.writeUTF(sendResource.toJson(gson));
-						
-						out.writeUTF(otherIn.readUTF());
-						
+						otherIn.readUTF();
+						while(true) {	
+							try {
+								String temp = otherIn.readUTF();
+								JsonObject json = gson.fromJson(temp, JsonObject.class);
+								JsonElement resultsize = json.get("resultSize");
+								if (resultsize == null) {
+									//not resultsize
+									out.writeUTF(temp);
+								} else {
+									//is resultsize
+									result += resultsize.getAsInt();
+								}	
+							} catch (EOFException e) {
+									break;
+							}
+						}
+					
 					} catch (UnknownHostException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -84,8 +102,9 @@ public class QueryService extends Service{
 					e.printStackTrace();
 				}
 			}
+			result += matchResources.size();
 			JsonObject resultSize = new JsonObject();
-			resultSize.addProperty("resultSize", matchResources.size());
+			resultSize.addProperty("resultSize", result);
 			
 			try {
 				out.writeUTF(resultSize.toString());

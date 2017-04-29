@@ -24,7 +24,7 @@ public class Client {
 
 	public static void main(String args[]) {
 		// arguments supply message and hostname
-
+		boolean debug = false;
 		Socket s = null;
 		int serverPort = 3780;
 		String ipAddress = null;
@@ -76,7 +76,9 @@ public class Client {
 					exchangeServers.add(newServer);
 				}
 			}
-			
+			if(cl.hasOption("debug")) {
+				debug = true;
+			}
 			if(cl.hasOption("help")) {
 				HelpFormatter hf = new HelpFormatter();
 				hf.printHelp("Options", options);
@@ -119,19 +121,12 @@ public class Client {
 		try {
 			System.out.println(ipAddress+"-----"+serverPort);
 			s = new Socket(ipAddress, serverPort);
-			System.out.println("Connection Established");
+			//System.out.println("Connection Established");
 			DataInputStream in = new DataInputStream(s.getInputStream());
 			DataOutputStream out = new DataOutputStream(s.getOutputStream());
-			System.out.println("Sending data\n"+clJson.toString());
-			
-			/*
-			JsonParser jsonParser = new JsonParser();
-			JsonObject jsonObject = jsonParser.parse(clJson).getAsJsonObject();
-			String command = jsonObject.get("command").getAsString();
-			
-			System.out.println(command);
-			*/
-			
+			if (debug) {
+				System.out.println("Sending data\n"+clJson.toString());
+			}
 			out.writeUTF(clJson); // UTF is a string encoding see Sn. 4.4
 			
 			out.flush();
@@ -139,18 +134,25 @@ public class Client {
 			
 			if(cl.hasOption("fetch")){
 				String message1 = in.readUTF();
-				System.out.println("Received: " + message1);
+				if (debug) {
+					System.out.println("Received: " + message1);
+				}
 				
 				String resource = in.readUTF();
-				System.out.println("Received: " + resource);
-				
+				if (debug) {
+					System.out.println("Received: " + resource);
+				}
 				JsonParser jsonParser = new JsonParser();
 				JsonObject command = (JsonObject) jsonParser.parse(resource);
 				
 				String message2 = in.readUTF();
-				System.out.println("Received: " + message2);
+				if (debug) {
+					System.out.println("Received: " + message2);
+				}
 				String path = command.get("uri").getAsString();
-				System.out.println(path);
+				if (debug) {
+					System.out.println(path);
+				}
 				String[] tokens = path.split("\\\\");
 				String fileName = tokens[tokens.length-1];
 				
@@ -166,8 +168,9 @@ public class Client {
 				
 				// Variable used to read if there are remaining size left to read.
 				int num;
-				
-				System.out.println("Downloading "+fileName+" of size "+fileSizeRemaining);
+				if (debug) {
+					System.out.println("Downloading "+fileName+" of size "+fileSizeRemaining);
+				}
 				while((num=in.read(receiveBuffer))>0){
 					// Write the received bytes into the RandomAccessFile
 					downloadingFile.write(Arrays.copyOf(receiveBuffer, num));
@@ -184,15 +187,18 @@ public class Client {
 						break;
 					}
 				}
-				System.out.println("File received!");
+				if (debug) {
+					System.out.println("File received!");
+				}
 				downloadingFile.close();
 			}
 			
 			
 			while(true) {
 				String data = in.readUTF(); // read a line of data from the stream
-				
-				System.out.println("Received: " + data);
+				if (debug) {
+					System.out.println("Received: " + data);
+				}
 			}
 		} catch (UnknownHostException e) {
 			System.out.println("Socket:" + e.getMessage());
