@@ -17,6 +17,7 @@ import assist.TaskManager;
 import org.apache.commons.cli.*;
 
 import dao.*;
+import server_service.ExchangeService;
 import server_service.FetchService;
 import server_service.PublishService;
 import server_service.QueryService;
@@ -229,7 +230,7 @@ public class TCPServer {
 		    				result = commandObject.get("serverList");
 		    				
 		    				
-		    				service = new FetchService(resourceStroage, serverRecords);
+		    				service = new ExchangeService(resourceStroage, serverRecords);
 		    			    service.response(result, output);
 		    			    
 		    				break;
