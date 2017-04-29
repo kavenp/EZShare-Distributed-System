@@ -57,8 +57,8 @@ public class PublishService extends Service {
 		if (resource.getUri() != "" && !URI.create(resource.getUri()).isAbsolute()) {
 			throw new MyException ("invalid resource");
 		}
-		if ((resource.getUri() != "" && (URI.create(resource.getUri()).getScheme()).equals("file"))) {
-			throw new MyException("missing resource");
+		if (!(resource.getUri().equals("")) && ((URI.create(resource.getUri()).getScheme().equals("file"))) ) {
+			throw new MyException("missing resource and//or secret");
 		}
 		if (Pattern.matches(regEx, resource.getUri()) == true) {
 			throw new MyException("invalid resource");

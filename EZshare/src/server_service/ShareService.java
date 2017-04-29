@@ -79,7 +79,7 @@ public class ShareService extends Service {
 		/*if(Pattern.matches(regEx, resource.getUri()) == false){
 			throw new MyException("incorrect file uri format");
 		}*/
-		if ((resource.getUri() != "" && !(URI.create(resource.getUri()).getScheme()).equals("file"))) {
+		if ((!(URI.create(resource.getUri()).getScheme().equals("file"))) && !(resource.getUri().equals("")) ) {
 			throw new MyException("missing resource and//or secret");
 		}
 		if (resource.getUri() != "" && !URI.create(resource.getUri()).isAbsolute()) {
