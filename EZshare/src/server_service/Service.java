@@ -3,6 +3,8 @@ package server_service;
 
 import java.io.DataOutputStream;
 
+import com.google.gson.JsonElement;
+
 import assist.ResourceStorage;
 import assist.Response;
 import assist.ServerErrorResponse;
@@ -41,6 +43,14 @@ public class Service {
 		
 	}
 	//public String response()
+
+
+
+
+	public void response(JsonElement result, DataOutputStream output) {
+		// TODO Auto-generated method stub
+		
+	}
 	
 	
 }

@@ -12,7 +12,6 @@ import assist.Response;
 import assist.ServerCLIOptions;
 import assist.ServerErrorResponse;
 import assist.ServerRecords;
-import assist.ServerSuccessResponse;
 import assist.TaskManager;
 
 import org.apache.commons.cli.*;
@@ -38,14 +37,14 @@ public class TCPServer {
 	private static String serverSecret;
 	private static String HostnamePort;
 	
-	private static ResourceStorage resourceStroage;
-	private static ServerRecords serverRecords;
+	public static ResourceStorage resourceStroage;
+	public static ServerRecords serverRecords;
 
 	
 	
 	
     public static void main (String args[]) { 
-
+    	TCPServer TCPServer = new TCPServer();
     	String serverHostname = null;
     	//generate a default secret
     	serverSecret = secretGenerator.genString();
@@ -136,6 +135,9 @@ public class TCPServer {
 					System.out.println("Client " + counter + ": " + endpoint.getHostString() + " Tried to connect within connection interval, rejected.");
 					client.close();
 				}
+				//self exchange command
+				Timer timer = new Timer();  
+		        timer.schedule(TCPServer.new MyTask(), 1000*exchangeT, 1000*exchangeT);
 			}
 			
 		} catch (IOException e) {
@@ -225,7 +227,12 @@ public class TCPServer {
 		    				
 		    			case "EXCHANGE":
 		    				System.out.println("EXCHANGE command: " + jsonString);
-		    				output.writeUTF("Received EXCHANGE command.\n");
+		    				result = commandObject.get("serverList");
+		    				
+		    				
+		    				service = new FetchService(resourceStroage, serverRecords);
+		    			    service.response(result, output);
+		    			    
 		    				break;
 		    			
 		    			default:
@@ -249,5 +256,41 @@ public class TCPServer {
     	} catch (IOException e) {
 			//e.printStackTrace();
 		} 
+	}
+    class MyTask extends TimerTask{
+
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+			Random r = new Random(System.currentTimeMillis());
+			ArrayList<Server> exchangeServers = serverRecords.getServers();
+			Server exchangeServer = exchangeServers.get(r.nextInt(exchangeServers.size()));
+			
+			ExchangeResource resource = new ExchangeResource(exchangeServers);
+			Socket s = null;
+			try{
+				s = new Socket(exchangeServer.getHostname(), exchangeServer.getPort());
+				System.out.println("Connection Established");
+				
+				DataOutputStream out = new DataOutputStream(s.getOutputStream());
+				Gson gson = new GsonBuilder().serializeNulls().create();
+
+				out.writeUTF(resource.toJson(gson)); // UTF is a string encoding see Sn. 4.4
+				
+				out.flush();
+				
+			}catch(IOException e){
+				System.out.println(e.getMessage());
+				serverRecords.rmServer(exchangeServer);
+			}finally {
+				if (s != null)
+					try {
+						s.close();
+					} catch (IOException e) {
+						System.out.println("close:" + e.getMessage());
+					}
+			}
+		}
+		
 	}
 }
