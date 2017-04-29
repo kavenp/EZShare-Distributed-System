@@ -5,14 +5,14 @@ import java.util.TimerTask;
 public class TaskManager {
 	private Timer timer = new Timer();
 	private ConnectionTracker tracker;
-	private static int period = 10 * 60; //10 minute period converted to seconds
+	private static int period = 10 * 60; //1 minute while testing,10 minute period converted to seconds
 	
 	public TaskManager(ConnectionTracker tracker) {
 		this.tracker = tracker;
 	}
 	
 	public void startTasks() {
-		timer.schedule(new PeriodicTask(), period * 1000);
+		timer.schedule(new PeriodicTask(), period *1000);
 		//start 10 minutes after calling startTasks
 	}
 	

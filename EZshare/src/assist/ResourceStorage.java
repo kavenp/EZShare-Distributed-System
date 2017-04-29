@@ -61,7 +61,7 @@ public class ResourceStorage {
 		while (iter.hasNext()) {
 			ConcurrentHashMap.Entry entry = (ConcurrentHashMap.Entry) iter.next();
 			Resource val = (Resource) entry.getValue();
-			matchResources.add(val);
+			//matchResources.add(val);
 			/*
 			 * The purpose of the query is to match the template against 
 			 * existing resources. The template will match a candidate resource if:
@@ -79,50 +79,87 @@ public class ResourceStorage {
 			 * 7. OR The template description and name are both ""))
 			 */
 			
-			/*
-			if(template.getChannel().equals(val.getChannel())){
-				if(template.getOwner() != ""){
-					if(template.getOwner().equals(val.getOwner())){
-						if(val.getTags().toString().contains(template.getTags().toString())){
-							if(template.getUri() != ""){
-								if(template.getUri().equals(val.getUri())){
-									if(val.getName().contains(template.getName()) || 
-											val.getDescription().contains(template.getDescription())){
-										matchResources.add(val);
-									}
-								}
-							}else{
-								if(val.getName().contains(template.getName()) || 
-										val.getDescription().contains(template.getDescription())){
-									matchResources.add(val);
-								}
+			
+			if(template.getChannel().equals(val.getChannel()))
+			{
+				if(template.getOwner() != "")
+				{
+					if(template.getOwner().equals(val.getOwner()) 
+						&& matchTags(template.getTags(), val.getTags()))
+					{
+						if(template.getUri() != "")
+						{
+							if( template.getUri().equals(val.getUri()) && 
+								(template.getName().equals("") && template.getDescription().equals(""))
+								|| val.getName().contains(template.getName()) || 
+								val.getDescription().contains(template.getDescription())) 
+							{
+								matchResources.add(val);
+							}
+						}else
+						{
+							if( template.getUri().equals(val.getUri()) && 
+								(template.getName().equals("") && template.getDescription().equals(""))
+								|| val.getName().contains(template.getName()) || 
+								val.getDescription().contains(template.getDescription())) 
+							{
+								matchResources.add(val);
 							}
 						}
 					}
-				}else{
-					if(val.getTags().toString().contains(template.getTags().toString())){
-						if(template.getUri() != ""){
-							if(template.getUri().equals(val.getUri())){
-								if(val.getName().contains(template.getName()) || 
-										val.getDescription().contains(template.getDescription())){
-									matchResources.add(val);
-								}
+				}else
+				{
+					if(matchTags(template.getTags(), val.getTags()))
+					{
+						if(template.getUri() != "")
+						{
+							if( template.getUri().equals(val.getUri()) && 
+								(template.getName().equals("") && template.getDescription().equals(""))
+								|| val.getName().contains(template.getName()) || 
+								val.getDescription().contains(template.getDescription()))
+							{
+								matchResources.add(val);
 							}
-						}else{
-							if(val.getName().contains(template.getName()) || 
-									val.getDescription().contains(template.getDescription())){
+						}else
+						{
+							if( template.getUri().equals(val.getUri()) && 
+								(template.getName().equals("") && template.getDescription().equals(""))
+								|| val.getName().contains(template.getName()) || 
+								val.getDescription().contains(template.getDescription( )))
+							{
 								matchResources.add(val);
 							}
 						}
 					}
 				}
 			}
-				*/
+		}
+		//System.out.println(matchResources.toString());
+		return matchResources;
 	}
 
-	return matchResources;
+/* Matches if template tags are empty or if candidate tags contains any
+ * tag from template tags */
+private boolean matchTags(ArrayList<String> tTags, ArrayList<String> cTags) {
+	if (tTags.isEmpty()) {
+		//when template tags list is empty match everything
+		return true;
+	} else {
+		for (String tTag : tTags) {
+			for (String cTag : cTags) {
+				if (tTag.equalsIgnoreCase(cTag)) {
+					return true;
+					//something matched so return true
+				}
+			}
+		}
+		return false;
+		//nothing matches then return false
 	}
 }
+
+}
+
 /*
 public void printResource(){
 	Iterator<Entry<Tuple, Resource>> iter = resources.entrySet().iterator();

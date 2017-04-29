@@ -1,5 +1,5 @@
 package assist;
-import java.util.HashMap;
+import java.util.concurrent.*;
 import java.util.Map;
 
 /* A class to track connections that try to connect to server
@@ -10,7 +10,7 @@ import java.util.Map;
  */
 public class ConnectionTracker {
 	private int interval;
-	private HashMap<String, Long> cache = new HashMap<String, Long>();
+	private ConcurrentHashMap<String, Long> cache = new ConcurrentHashMap<String, Long>();
 	
 	//create tracker with ConnectionIntervalLimit
 	public ConnectionTracker (int interval) {
@@ -52,12 +52,14 @@ public class ConnectionTracker {
 	 * every few minutes to lessen the amount of stored connection trackers
 	 * without cleaning the tracker map there will be a lot of expired trackers stored */
 	public void cleanTracker() {
-		for (Map.Entry<String, Long> connection : cache.entrySet()) {
-			if(connection.getValue() - System.currentTimeMillis() < 0) {
-				//connection timer has expired, no need to keep tracking
-				cache.remove(connection.getKey());
+		if (!cache.isEmpty()) {
+			for (Map.Entry<String, Long> connection : cache.entrySet()) {
+				if(connection.getValue() - System.currentTimeMillis() < 0) {
+					//connection timer has expired, no need to keep tracking
+					cache.remove(connection.getKey());
+				}
+				//ignore unexpired connection trackers
 			}
-			//ignore unexpired connection trackers
 		}
 	}
 	
