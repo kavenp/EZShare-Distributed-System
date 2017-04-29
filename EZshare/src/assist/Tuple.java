@@ -1,4 +1,4 @@
-package dao;
+package assist;
 
 public class Tuple<X,Y,Z> {
     public final X x;

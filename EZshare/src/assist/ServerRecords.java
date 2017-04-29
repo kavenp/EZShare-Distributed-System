@@ -1,3 +1,4 @@
+package assist;
 import java.util.*;
 import com.google.gson.*;
 import dao.ExchangeResource;
@@ -26,5 +27,13 @@ public class ServerRecords {
 		Gson gson = new GsonBuilder().serializeNulls().create();
 		ExchangeResource exchange = new ExchangeResource(servers);
 		return gson.toJson(exchange);
+	}
+
+	public ArrayList<Server> getServers() {
+		return servers;
+	}
+
+	public void setServers(ArrayList<Server> servers) {
+		this.servers = servers;
 	}
 }

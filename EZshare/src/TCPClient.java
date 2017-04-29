@@ -3,6 +3,7 @@ import java.util.ArrayList;
 import java.io.*;
 import com.google.gson.*;
 
+import assist.ClientCLIOptions;
 import dao.ExchangeResource;
 import dao.FetchResource;
 import dao.Gsonable;
@@ -39,7 +40,7 @@ public class TCPClient {
 		// Gson builder that includes null values
 		Gson gson = new GsonBuilder().serializeNulls().create();
 		String clJson = null;
-		CommandLine cl;
+		CommandLine cl = null;
 		try {
 			cl = parser.parse(options, args);
 			ipAddress = cl.getOptionValue("host", defaultIpAddress);
@@ -70,12 +71,12 @@ public class TCPClient {
 				for(String eachServer : servers){
 					String hostname = eachServer.split(":")[0];
 					String port = eachServer.split(":")[1];
-					Server newServer = new Server(hostname, port);
+					Server newServer = new Server(hostname, Integer.parseInt(port));
 					exchangeServers.add(newServer);
 				}
 			}
 			
-			if (cl.hasOption("help")) {
+			if(cl.hasOption("help")) {
 				HelpFormatter hf = new HelpFormatter();
 				hf.printHelp("Options", options);
 				return;
@@ -109,8 +110,10 @@ public class TCPClient {
 
 		} catch (ParseException e1) {
 			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
+			System.out.println("Unrecognized arguments, please check your command");
+			System.exit(0);
+			//e1.printStackTrace();
+		} 
 		
 		try {
 			System.out.println(ipAddress+"-----"+serverPort);
@@ -119,6 +122,7 @@ public class TCPClient {
 			DataInputStream in = new DataInputStream(s.getInputStream());
 			DataOutputStream out = new DataOutputStream(s.getOutputStream());
 			System.out.println("Sending data\n"+clJson);
+			
 			/*
 			JsonParser jsonParser = new JsonParser();
 			JsonObject jsonObject = jsonParser.parse(clJson).getAsJsonObject();
@@ -126,10 +130,14 @@ public class TCPClient {
 			
 			System.out.println(command);
 			*/
+			
 			out.writeUTF(clJson); // UTF is a string encoding see Sn. 4.4
+			
 			out.flush();
+			
 			while(true) {
 				String data = in.readUTF(); // read a line of data from the stream
+				
 				System.out.println("Received: " + data);
 			}
 		} catch (UnknownHostException e) {

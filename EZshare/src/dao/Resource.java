@@ -2,11 +2,15 @@ package dao;
 
 import java.util.ArrayList;
 
+import com.google.gson.Gson;
+
+import assist.Tuple;
+
 
 /*
  * base resource information
  */
-public class Resource {
+public class Resource extends Gsonable{
 	private String name = "";
 	private ArrayList<String> tags = new ArrayList<String>();
 	private String description = "";
@@ -89,4 +93,11 @@ public class Resource {
 		this.ezserver = ezserver;
 	}
 	
+	public String toJson(Gson gson) {
+		// TODO Auto-generated method stub
+		
+		return gson.toJson(this);
+	}
+
+
 }

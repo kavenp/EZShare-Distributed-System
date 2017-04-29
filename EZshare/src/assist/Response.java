@@ -1,14 +1,14 @@
-package dao;
+package assist;
 
 import com.google.gson.Gson;
 
-public class ServerSuccessResponse extends Gsonable {
-	private String response = "success";
+import dao.Gsonable;
+
+public class Response extends Gsonable {
 	
 	public String toJson(Gson gson) {
 		// TODO Auto-generated method stub
 		
 		return gson.toJson(this);
 	}
-	
 }

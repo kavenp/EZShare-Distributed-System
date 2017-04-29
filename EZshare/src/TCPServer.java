@@ -3,9 +3,26 @@ import java.io.*;
 import java.util.*;
 import javax.net.ServerSocketFactory;
 import com.google.gson.*;
+
+import assist.ConnectionTracker;
+import assist.MyException;
+import assist.RandomString;
+import assist.ResourceStorage;
+import assist.Response;
+import assist.ServerCLIOptions;
+import assist.ServerErrorResponse;
+import assist.ServerRecords;
+import assist.ServerSuccessResponse;
+import assist.TaskManager;
+
 import org.apache.commons.cli.*;
 
 import dao.*;
+import server_service.PublishService;
+import server_service.QueryService;
+import server_service.RemoveService;
+import server_service.Service;
+import server_service.ShareService;
  
 public class TCPServer {
     //the default server port
@@ -17,31 +34,50 @@ public class TCPServer {
 	//default exchange interval (in seconds)
 	private static int defaultExchangeT = 600;
     
+	private static String serverSecret;
+	private static String HostnamePort;
+	
+	private static ResourceStorage resourceStroage;
+	private static ServerRecords serverRecords;
+
+	
+	
+	
     public static void main (String args[]) { 
-    	String HostnamePort;
+
+    	String serverHostname = null;
     	//generate a default secret
-    	String secret;
+    	serverSecret = secretGenerator.genString();
     	int counter = 0;
     	int exchangeT = defaultExchangeT;
     	int connectionLimit = defaultConnectionLimit;
     	int serverPort = defaultServerPort; 
+    	
+    	
     	//set default first, overwrite only when option flag is set
     	//System.setProperty("sun.net.spi.nameservice.nameservers", "8.8.8.8");
     	//System.setProperty("sun.net.spi.nameservice.provider.1", "dns,sun");
+    	resourceStroage = new ResourceStorage();
+    	serverRecords = new ServerRecords();
+    	
+    	
     	//initialize connection tracker
     	ConnectionTracker tracker = new ConnectionTracker(connectionLimit);
     	//setup command line options parser
     	ServerCLIOptions cliOptions = new ServerCLIOptions();
 		Options options = cliOptions.createOptions();
 		DefaultParser parser = new DefaultParser();
-		ServerSocketFactory sock_factory = ServerSocketFactory.getDefault();
+		
 		//initialize socket factory
-		ServerRecords servers = new ServerRecords();
+		ServerSocketFactory sock_factory = ServerSocketFactory.getDefault();
 		//initialize empty server records
-		TaskManager manager = new TaskManager(tracker);
+		ServerRecords servers = new ServerRecords();
 		//initialize task manager for timed tasks
-		manager.startTasks();
+		TaskManager manager = new TaskManager(tracker);
 		//starts timer for timed tasks, will run cleanTracker and send exchange command (still need to implement exchange sending)
+		manager.startTasks();
+		
+		
 		CommandLine cl;
     	try {
     		cl = parser.parse(options, args);
@@ -59,11 +95,11 @@ public class TCPServer {
     		}
     		//get default local host name
         	String defaultServerHostname = InetAddress.getLocalHost().getHostName();
-        	String serverHostname;
+        	
         	//overwrite hostname to advertisedhostname if flagged
         	serverHostname = cl.getOptionValue("advertisedhostname", defaultServerHostname);
         	//set secret if flagged
-        	secret = cl.getOptionValue("secret", secretGenerator.genString());
+        	serverSecret = cl.getOptionValue("secret", secretGenerator.genString());
         	HostnamePort = serverHostname + ":" + Integer.toString(serverPort);
         	//returns ezserver string of local hostname and port no.
 	    }
@@ -72,7 +108,11 @@ public class TCPServer {
 	    	e.printStackTrace();
 	    }
     	try(ServerSocket server = sock_factory.createServerSocket(serverPort)){
-			System.out.println("Waiting for client connection..");
+			System.out.println("Starting the EZShare Server");
+			System.out.println("using secret: "+ serverSecret);
+			System.out.println("using advertised hostname: "+ serverHostname);
+			System.out.println("bound to port: "+ serverPort);
+			System.out.println("started");
 			
 			// Wait for connections.
 			while(true){
@@ -97,7 +137,12 @@ public class TCPServer {
     }
 	
     private static void clientConnection(Socket client) {
+    	
+    	
     	try(Socket clientSocket = client) {
+    		
+        	Service service = null;
+        	
     		// Gson builder that includes null values, used to parse and build JSON strings
     		Gson gson = new GsonBuilder().serializeNulls().create();
     		// Input stream
@@ -112,31 +157,55 @@ public class TCPServer {
 		    		
 		    		JsonElement commandElement = commandObject.get("command");
 		    		String command = commandElement.getAsString();
+		    		JsonElement result = null;
 		    		
-		    		switch (command) {
+		    		try{
+		    			switch (command) {
 		    			case "PUBLISH":
 		    				System.out.println("PUBLISH command: " + jsonString);
-		    				output.writeUTF(jsonString);
+		    				result = commandObject.get("resource");
+		    				Resource publishResource = gson.fromJson(result, Resource.class);
+		    				service = new PublishService(resourceStroage, serverRecords);
+		    			    service.response(publishResource, output);
 		    				break;
 		    			
 		    			case "REMOVE":
 		    				System.out.println("REMOVE command: " + jsonString);
-		    				output.writeUTF("Received REMOVE command.\n");
+		    				result = commandObject.get("resource");
+		    				Resource removeResource = gson.fromJson(result, Resource.class);
+		    				service = new RemoveService(resourceStroage, serverRecords);
+		    			    service.response(removeResource, output);
+		    			
 		    				break;
 		    				
 		    			case "SHARE":
 		    				System.out.println("SHARE command: " + jsonString);
-		    				output.writeUTF("Received SHARE command.\n");
+		    				String secret = commandObject.get("secret").getAsString();
+		    				if(secret == null){
+		    					throw new MyException("missing secret");
+		    				}
+		    				if(!serverSecret.equals(secret)){
+		    					throw new MyException("incorrect secret");
+		    				}
+		    				
+		    				Resource shareResource = gson.fromJson(result, Resource.class);
+		    				service = new ShareService(resourceStroage, serverRecords);
+		    				service.response(shareResource, output);
 		    				break;
 		    				
 		    			case "QUERY":
 		    				System.out.println("QUERY command: " + jsonString);
-		    				output.writeUTF("Received QUERY command.\n");
+		    				result = commandObject.get("resourceTemplate");
+		    				boolean relay = commandObject.get("relay").getAsBoolean();
+		    				Resource queryResource = gson.fromJson(result, Resource.class);
+		    				service = new QueryService(resourceStroage, serverRecords);
+		    				
+		    			    service.response(queryResource, output, HostnamePort, relay);
 		    				break;
 		    			
 		    			case "FETCH":
 		    				System.out.println("FETCH command: " + jsonString);
-		    				output.writeUTF("Received FETCH command.\n");
+		    				
 		    				break;
 		    				
 		    			case "EXCHANGE":
@@ -145,16 +214,25 @@ public class TCPServer {
 		    				break;
 		    			
 		    			default:
-		    				System.out.println("Invalid command: " + jsonString);
-		    				output.writeUTF("Received invalid command.\n");
+		    				// default error message for the command
+		    				Response response = new ServerErrorResponse();
 		    				//Invalid command handle here
+				    		output.writeUTF(response.toJson(gson));
 		    				break;
+		    			}
+		    		} catch(JsonSyntaxException e){
+		    			ServerErrorResponse response = new ServerErrorResponse("missing resource fields");
+		    			output.writeUTF(response.toJson(gson));
+		    		} catch(MyException e){
+		    			ServerErrorResponse response = new ServerErrorResponse(e.getMessage());
+		    			output.writeUTF(response.toJson(gson));
 		    		}
+		    		
 		    		client.close();
 				}
 			}
     	} catch (IOException e) {
 			//e.printStackTrace();
-		}
+		} 
 	}
 }

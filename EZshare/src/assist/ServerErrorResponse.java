@@ -1,8 +1,10 @@
-package dao;
+package assist;
 
 import com.google.gson.Gson;
 
-public class ServerErrorResponse extends Gsonable {
+import dao.Gsonable;
+
+public class ServerErrorResponse extends Response {
 	private String response = "error";
 	private String errorMessage = "invalid command";
 	//default to invalid command
@@ -12,6 +14,15 @@ public class ServerErrorResponse extends Gsonable {
 		this.errorMessage = msg;
 	}
 	
+	public ServerErrorResponse(String errorMessage) {
+		super();
+		this.errorMessage = errorMessage;
+	}
+
+	public ServerErrorResponse() {
+		// TODO Auto-generated constructor stub
+	}
+
 	public String toJson(Gson gson) {
 		// TODO Auto-generated method stub
 		

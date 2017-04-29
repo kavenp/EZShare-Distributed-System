@@ -1,3 +1,4 @@
+package assist;
 import java.util.Random;
 
 /* Class for creating random alphanumeric strings used for generating secret 
