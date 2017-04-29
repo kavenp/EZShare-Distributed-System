@@ -29,9 +29,10 @@ public class ShareService extends Service {
 	public void response(Resource resource, DataOutputStream out){
 		Response response = null;
 		Gson gson = new GsonBuilder().serializeNulls().create();
+
+
 		try {
 			checkResource(resource);
-			
 			BufferedReader bReader =new BufferedReader(new FileReader(new File(resource.getUri()))); 
 			
 			if(resourceStroage.checkResource(resource.getResourceKey()) == true){

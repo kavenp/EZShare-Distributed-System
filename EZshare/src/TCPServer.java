@@ -18,6 +18,7 @@ import assist.TaskManager;
 import org.apache.commons.cli.*;
 
 import dao.*;
+import server_service.FetchService;
 import server_service.PublishService;
 import server_service.QueryService;
 import server_service.RemoveService;
@@ -48,6 +49,9 @@ public class TCPServer {
     	String serverHostname = null;
     	//generate a default secret
     	serverSecret = secretGenerator.genString();
+    	
+    	serverSecret = "zj7acor85pg2kc8gtktfuquara";
+    	
     	int counter = 0;
     	int exchangeT = defaultExchangeT;
     	int connectionLimit = defaultConnectionLimit;
@@ -99,7 +103,7 @@ public class TCPServer {
         	//overwrite hostname to advertisedhostname if flagged
         	serverHostname = cl.getOptionValue("advertisedhostname", defaultServerHostname);
         	//set secret if flagged
-        	serverSecret = cl.getOptionValue("secret", secretGenerator.genString());
+        	serverSecret = cl.getOptionValue("secret", "zj7acor85pg2kc8gtktfuquara");
         	HostnamePort = serverHostname + ":" + Integer.toString(serverPort);
         	//returns ezserver string of local hostname and port no.
 	    }
@@ -165,6 +169,7 @@ public class TCPServer {
 		    				System.out.println("PUBLISH command: " + jsonString);
 		    				result = commandObject.get("resource");
 		    				Resource publishResource = gson.fromJson(result, Resource.class);
+		    				
 		    				service = new PublishService(resourceStroage, serverRecords);
 		    			    service.response(publishResource, output);
 		    				break;
@@ -187,8 +192,9 @@ public class TCPServer {
 		    				if(!serverSecret.equals(secret)){
 		    					throw new MyException("incorrect secret");
 		    				}
-		    				
+		    				result = commandObject.get("resource");
 		    				Resource shareResource = gson.fromJson(result, Resource.class);
+		    				
 		    				service = new ShareService(resourceStroage, serverRecords);
 		    				service.response(shareResource, output);
 		    				break;
@@ -205,7 +211,12 @@ public class TCPServer {
 		    			
 		    			case "FETCH":
 		    				System.out.println("FETCH command: " + jsonString);
+		    				result = commandObject.get("resourceTemplate");
+		    				Resource fetchResource = gson.fromJson(result, Resource.class);
 		    				
+		    				service = new FetchService(resourceStroage, serverRecords);
+		    			    service.response(fetchResource, output, HostnamePort);
+		    			    
 		    				break;
 		    				
 		    			case "EXCHANGE":

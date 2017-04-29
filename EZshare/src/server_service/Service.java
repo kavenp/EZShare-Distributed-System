@@ -36,7 +36,10 @@ public class Service {
 		// TODO Auto-generated method stub
 		
 	}
-	
+	public void response(Resource removeResource, DataOutputStream output, String hostnamePort) {
+		// TODO Auto-generated method stub
+		
+	}
 	//public String response()
 	
 	
