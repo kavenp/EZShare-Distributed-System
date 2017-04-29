@@ -148,8 +148,10 @@ public class TCPClient {
 				
 				String message2 = in.readUTF();
 				System.out.println("Received: " + message2);
-			
-				String fileName = "donwload.jpg";
+				String path = command.get("uri").getAsString();
+				System.out.println(path);
+				String[] tokens = path.split("\\\\");
+				String fileName = tokens[tokens.length-1];
 				
 				RandomAccessFile downloadingFile = new RandomAccessFile(fileName, "rw");
 				
