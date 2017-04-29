@@ -122,7 +122,7 @@ public class Client {
 			System.out.println("Connection Established");
 			DataInputStream in = new DataInputStream(s.getInputStream());
 			DataOutputStream out = new DataOutputStream(s.getOutputStream());
-			System.out.println("Sending data\n"+clJson);
+			System.out.println("Sending data\n"+clJson.toString());
 			
 			/*
 			JsonParser jsonParser = new JsonParser();
