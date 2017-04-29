@@ -17,9 +17,9 @@ public class TaskManager {
 	}
 	
 	public void startTasks() {
-		DateFormat df = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss:SSS");
+		/*DateFormat df = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss:SSS");
 		Date date = new Date();
-		System.out.println("Starting tasks " + df.format(date));
+		System.out.println("Starting tasks " + df.format(date));*/
 		timer.schedule(new PeriodicTask(), exchangeT * 1000);
 		//start 10 minutes after calling startTasks
 	}
@@ -27,10 +27,10 @@ public class TaskManager {
 	private class PeriodicTask extends TimerTask {
 		@Override
 		public void run() {
-			DateFormat df = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss:SSS");
+			/*DateFormat df = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss:SSS");
 			Date date = new Date();
 			System.out.println("Task period = " + exchangeT * 1000);
-			System.out.println("Running tasks " + df.format(date));
+			System.out.println("Running tasks " + df.format(date));*/
 			tracker.cleanTracker();
 			//Exchange command send task can be here as well
 			timer.schedule(new PeriodicTask(), exchangeT *1000);
