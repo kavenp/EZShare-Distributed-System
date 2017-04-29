@@ -2,16 +2,16 @@ package assist;
 import java.util.*;
 import com.google.gson.*;
 import dao.ExchangeResource;
-import dao.Server;
+import dao.ServerInfo;
 
 public class ServerRecords {
-	private ArrayList<Server> servers = new ArrayList<Server>();
+	private ArrayList<ServerInfo> servers = new ArrayList<ServerInfo>();
 	
-	public void addServer(Server server) {
+	public void addServer(ServerInfo server) {
 		servers.add(server);
 	}
 	
-	public void rmServer(Server server) {
+	public void rmServer(ServerInfo server) {
 		servers.remove(server);
 	}
 	
@@ -29,11 +29,11 @@ public class ServerRecords {
 		return gson.toJson(exchange);
 	}
 
-	public ArrayList<Server> getServers() {
+	public ArrayList<ServerInfo> getServers() {
 		return servers;
 	}
 
-	public void setServers(ArrayList<Server> servers) {
+	public void setServers(ArrayList<ServerInfo> servers) {
 		this.servers = servers;
 	}
 }

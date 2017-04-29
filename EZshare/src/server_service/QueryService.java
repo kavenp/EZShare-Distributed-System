@@ -19,7 +19,7 @@ import assist.ServerRecords;
 import assist.ServerSuccessResponse;
 import dao.QueryResource;
 import dao.Resource;
-import dao.Server;
+import dao.ServerInfo;
 
 public class QueryService extends Service{
 
@@ -42,7 +42,7 @@ public class QueryService extends Service{
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
-				for(Server server : serverRecords.getServers()){
+				for(ServerInfo server : serverRecords.getServers()){
 					try {
 						Socket s = new Socket(server.getHostname(),server.getPort());
 						QueryResource sendResource = new QueryResource(false, resource);

@@ -1,3 +1,4 @@
+package EZShare;
 import java.net.*;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,11 +13,11 @@ import dao.PublishResource;
 import dao.QueryResource;
 import dao.RemoveResource;
 import dao.Resource;
-import dao.Server;
+import dao.ServerInfo;
 import dao.ShareResource;
 
 import org.apache.commons.cli.*;
-public class TCPClient {
+public class Client {
 
 	public static final String defaultIpAddress = "127.0.0.1";
 	public static final String defaultServerPort = "3780";
@@ -27,7 +28,7 @@ public class TCPClient {
 		Socket s = null;
 		int serverPort = 3780;
 		String ipAddress = null;
-		ArrayList<Server> exchangeServers = new ArrayList<Server>();
+		ArrayList<ServerInfo> exchangeServers = new ArrayList<ServerInfo>();
 		try {
 			ipAddress = InetAddress.getLocalHost().getHostName();
 		} catch (UnknownHostException e2) {
@@ -71,7 +72,7 @@ public class TCPClient {
 				for(String eachServer : servers){
 					String hostname = eachServer.split(":")[0];
 					String port = eachServer.split(":")[1];
-					Server newServer = new Server(hostname, Integer.parseInt(port));
+					ServerInfo newServer = new ServerInfo(hostname, Integer.parseInt(port));
 					exchangeServers.add(newServer);
 				}
 			}

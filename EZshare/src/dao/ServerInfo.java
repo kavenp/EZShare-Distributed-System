@@ -5,11 +5,11 @@ package dao;
  * to display a server
  * 
  */
-public class Server {
+public class ServerInfo {
 	private String hostname;
 	private int port;
 	
-	public Server(String hostname, int port) {
+	public ServerInfo(String hostname, int port) {
 		super();
 		this.hostname = hostname;
 		this.port = port;

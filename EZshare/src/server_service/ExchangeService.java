@@ -14,7 +14,7 @@ import assist.ResourceStorage;
 import assist.Response;
 import assist.ServerRecords;
 import assist.ServerSuccessResponse;
-import dao.Server;
+import dao.ServerInfo;
 
 public class ExchangeService extends Service {
 
@@ -30,7 +30,7 @@ public class ExchangeService extends Service {
 		JsonArray servers = resource.getAsJsonArray();
 		
 		for(int i=0; i<servers.size(); i++){
-			Server server = gson.fromJson(servers.get(i), Server.class);
+			ServerInfo server = gson.fromJson(servers.get(i), ServerInfo.class);
 			Socket s;
 			try {
 				s = new Socket(server.getHostname(), server.getPort());
@@ -46,7 +46,7 @@ public class ExchangeService extends Service {
 			}
 		}
 		System.out.println("!!!!!1");
-		for(Server s : serverRecords.getServers()){
+		for(ServerInfo s : serverRecords.getServers()){
 			System.out.println(s.getPort());
 		}
 		response = new ServerSuccessResponse();

@@ -1,3 +1,4 @@
+package EZShare;
 import java.net.*;
 import java.io.*;
 import java.util.*;
@@ -25,7 +26,7 @@ import server_service.RemoveService;
 import server_service.Service;
 import server_service.ShareService;
  
-public class TCPServer {
+public class Server {
     //the default server port
 	private static int defaultServerPort = 3780;  
     //generates random alphanumeric strings of length 26
@@ -45,7 +46,7 @@ public class TCPServer {
 	
 	
     public static void main (String args[]) { 
-    	TCPServer TCPServer = new TCPServer();
+    	Server TCPServer = new Server();
     	String serverHostname = null;
     	//generate a default secret
     	serverSecret = secretGenerator.genString();
@@ -264,8 +265,8 @@ public class TCPServer {
 		public void run() {
 			// TODO Auto-generated method stub
 			Random r = new Random(System.currentTimeMillis());
-			ArrayList<Server> exchangeServers = serverRecords.getServers();
-			Server exchangeServer = exchangeServers.get(r.nextInt(exchangeServers.size()));
+			ArrayList<ServerInfo> exchangeServers = serverRecords.getServers();
+			ServerInfo exchangeServer = exchangeServers.get(r.nextInt(exchangeServers.size()));
 			
 			ExchangeResource resource = new ExchangeResource(exchangeServers);
 			Socket s = null;

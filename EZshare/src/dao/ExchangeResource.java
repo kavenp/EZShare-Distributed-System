@@ -9,10 +9,10 @@ import com.google.gson.Gson;
  */
 public class ExchangeResource extends Gsonable {
 	private String command;
-	private ArrayList<Server> serverList;
+	private ArrayList<ServerInfo> serverList;
 	
 	
-	public ExchangeResource(ArrayList<Server> serverList) {
+	public ExchangeResource(ArrayList<ServerInfo> serverList) {
 		this.command = "EXCHANGE";
 		this.serverList = serverList;
 		// TODO Auto-generated constructor stub
