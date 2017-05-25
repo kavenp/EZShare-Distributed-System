@@ -15,6 +15,7 @@ import dao.RemoveResource;
 import dao.Resource;
 import dao.ServerInfo;
 import dao.ShareResource;
+import dao.SubscribeResource;
 
 import org.apache.commons.cli.*;
 public class Client {
@@ -105,6 +106,10 @@ public class Client {
 			if(cl.hasOption("exchange")){
 				sendResource = new ExchangeResource(exchangeServers);
 			}
+			if(cl.hasOption("subscribe")){
+				boolean relay = true;
+				sendResource = new SubscribeResource(relay, resource);
+			}
 			try {
 				clJson = sendResource.toJson(gson);
 			} catch (NullPointerException e) {
@@ -117,6 +122,7 @@ public class Client {
 			System.exit(0);
 			//e1.printStackTrace();
 		} 
+		
 		
 		try {
 			System.out.println(ipAddress+"-----"+serverPort);
@@ -215,6 +221,7 @@ public class Client {
 				}
 		}
 	}
+	
 	public static int setChunkSize(long fileSizeRemaining){
 		// Determine the chunkSize
 		int chunkSize=1024*1024;

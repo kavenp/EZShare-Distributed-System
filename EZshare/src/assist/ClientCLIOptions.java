@@ -29,6 +29,8 @@ public class ClientCLIOptions {
 		options.addOption("help", false, "list help informations");
 		options.addOption("debug", false, "print debug inforamtion");
 		options.addOption("share", false, "share resource on server");
+		options.addOption("subscribe", false, "subscribe the resource");
+		options.addOption("unsubscribe", false, "unsubscribe the resource");
 		return options;
 		
 	}
