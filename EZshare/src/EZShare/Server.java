@@ -140,23 +140,31 @@ public class Server {
 			System.out.println("bound to secure port: "+ securePort);
 			System.out.println("started.");
 			
-    		SSLSocket sslclient = (SSLSocket) secureSock.accept();
-    		secureCounter++;
-    		InetSocketAddress secureEndpoint = (InetSocketAddress) sslclient.getRemoteSocketAddress();
-    		if (tracker.checkConnection(secureEndpoint.getHostString())) {
-    			//passes tracker check for interval
-    			if (debug) {
-    				System.out.println("Secure client " + secureCounter + " connected.");
-    			}
-    			//start new thread to handle secure connection
-    			if (debug) {
-    				Thread t = new Thread(() -> clientConnection(sslclient, true));
-    				t.start();
-    			} else {
-    				Thread t = new Thread(() -> clientConnection(sslclient, false));
-    				t.start();
-    			}
-    		}
+			while (true) {
+	    		SSLSocket sslclient = (SSLSocket) secureSock.accept();
+	    		secureCounter++;
+	    		InetSocketAddress secureEndpoint = (InetSocketAddress) sslclient.getRemoteSocketAddress();
+	    		if (tracker.checkConnection(secureEndpoint.getHostString())) {
+	    			//passes tracker check for interval
+	    			if (debug) {
+	    				System.out.println("Secure client " + secureCounter + " connected.");
+	    			}
+	    			//start new thread to handle secure connection
+	    			if (debug) {
+	    				Thread t = new Thread(() -> clientConnection(sslclient, true));
+	    				t.start();
+	    			} else {
+	    				Thread t = new Thread(() -> clientConnection(sslclient, false));
+	    				t.start();
+	    			}
+	    		} else {
+	    			//has tried to connect within interval, reject
+					if (debug) {
+						System.out.println("Secure client " + counter + ": " + secureEndpoint.getHostString() + " Tried to connect within connection interval, rejected.");
+					}
+					sslclient.close();
+	    		}
+			}
     	} catch (UnknownHostException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
