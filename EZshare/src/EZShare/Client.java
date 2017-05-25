@@ -2,6 +2,10 @@ package EZShare;
 import java.net.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
+
 import java.io.*;
 import com.google.gson.*;
 
@@ -21,13 +25,22 @@ import org.apache.commons.cli.*;
 public class Client {
 
 	public static final String defaultIpAddress = "127.0.0.1";
-	public static final String defaultServerPort = "3780";
+	public static final int defaultServerPort = 3780;
+	public static final int defaultSecurePort = 3781;
 
 	public static void main(String args[]) {
+    	//System.setProperty("javax.net.ssl.keyStore", "clientKeystore/clientkeystore.jks");
+    	System.setProperty("java.net.ssl.trustStore", "clientKeystore/clientkeystore.jks");
+    	//System.setProperty("javax.net.ssl.keyStorePassword", "comp90015");
+    	System.setProperty("java.net.ssl.trustStorePassword", "comp90015");
+    	System.setProperty("javax.net.debug", "all");
 		// arguments supply message and hostname
 		boolean debug = false;
+		// secure flag
+		boolean secure = false;
 		Socket s = null;
-		int serverPort = 3780;
+		int serverPort = defaultServerPort;
+		int securePort = defaultSecurePort;
 		String ipAddress = null;
 		ArrayList<ServerInfo> exchangeServers = new ArrayList<ServerInfo>();
 		try {
@@ -46,8 +59,17 @@ public class Client {
 		try {
 			cl = parser.parse(options, args);
 			ipAddress = cl.getOptionValue("host", defaultIpAddress);
-			serverPort = Integer.parseInt(cl.getOptionValue("port", defaultServerPort));
-
+			// confirm secure flag before port option, so we can tell if port is secure or not
+			if (cl.hasOption("secure")) {
+				secure = true;
+			}
+			if (cl.hasOption("port")) {
+				if (secure) {
+					securePort = Integer.parseInt(cl.getOptionValue("port"));
+				} else {
+					serverPort = Integer.parseInt(cl.getOptionValue("port"));
+				}
+			}
 			String name = cl.getOptionValue("name", "");
 			String description = cl.getOptionValue("description", "");
 			String tagsString = cl.getOptionValue("tags", null);
@@ -123,10 +145,16 @@ public class Client {
 			//e1.printStackTrace();
 		} 
 		
+		SSLSocketFactory ssl_sock_factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+		
 		
 		try {
 			System.out.println(ipAddress+"-----"+serverPort);
-			s = new Socket(ipAddress, serverPort);
+			if (secure) {
+				s = (SSLSocket) ssl_sock_factory.createSocket(ipAddress, securePort);
+			} else {
+				s = new Socket(ipAddress, serverPort);
+			}
 			//System.out.println("Connection Established");
 			DataInputStream in = new DataInputStream(s.getInputStream());
 			DataOutputStream out = new DataOutputStream(s.getOutputStream());

@@ -3,6 +3,11 @@ import java.net.*;
 import java.io.*;
 import java.util.*;
 import javax.net.ServerSocketFactory;
+import javax.net.ssl.SSLServerSocket;
+import javax.net.ssl.SSLServerSocketFactory;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
+
 import com.google.gson.*;
 
 import assist.ConnectionTracker;
@@ -28,7 +33,9 @@ import server_service.ShareService;
  
 public class Server {
     //the default server port
-	private static int defaultServerPort = 3780;  
+	private static int defaultServerPort = 3780;
+	//the default secure port
+	private static int defaultSecurePort = 3781;
     //generates random alphanumeric strings of length 26
 	private static RandomString secretGenerator = new RandomString(26);
 	//default connection interval limit (in seconds)
@@ -41,25 +48,35 @@ public class Server {
 	
 	public static ResourceStorage resourceStroage;
 	public static ServerRecords serverRecords;
+	public static ServerRecords secureServerRecords;
 
 	
 	
 	
     public static void main (String args[]) { 
+    	System.setProperty("javax.net.ssl.keyStore", "serverKeystore/serverkeystore.jks");
+    	//System.setProperty("java.net.ssl.trustStore", "serverKeystore/serverkeystore.jks");
+    	System.setProperty("javax.net.ssl.keyStorePassword", "comp90015");
+    	//System.setProperty("java.net.ssl.trustStorePassword", "comp90015");
+    	System.setProperty("javax.net.debug", "all");
     	Server TCPServer = new Server();
     	String serverHostname = null;
     	//generate a default secret
     	serverSecret = secretGenerator.genString();
     	
     	int counter = 0;
+    	int secureCounter = 0;
     	int exchangeT = defaultExchangeT;
     	int connectionLimit = defaultConnectionLimit;
     	int serverPort = defaultServerPort; 
+    	int securePort = defaultSecurePort;
     	boolean debug = false;
     	
     	//set default first, overwrite only when option flag is set
     	resourceStroage = new ResourceStorage();
     	serverRecords = new ServerRecords();
+    	//separate severRecords that holds only IP and secure port pairs
+    	secureServerRecords = new ServerRecords();
     	
     	//setup command line options parser
     	ServerCLIOptions cliOptions = new ServerCLIOptions();
@@ -68,6 +85,8 @@ public class Server {
 		
 		//initialize socket factory
 		ServerSocketFactory sock_factory = ServerSocketFactory.getDefault();
+		//initialize SSLsocket factory
+		SSLServerSocketFactory ssl_sock_factory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
 		
 		CommandLine cl;
     	try {
@@ -83,6 +102,10 @@ public class Server {
     		//overwrite port value if port option is flagged
     		if (cl.hasOption("port")) {
     			serverPort = Integer.parseInt(cl.getOptionValue("port"));
+    		}
+    		//overwrite secure port value if sport is flagged
+    		if (cl.hasOption("sport")) {
+    			securePort = Integer.parseInt(cl.getOptionValue("sport"));
     		}
     		if (cl.hasOption("debug")) {
     			debug = true;
@@ -109,7 +132,39 @@ public class Server {
 		TaskManager manager = new TaskManager(tracker, exchangeT, serverRecords);
 		//starts timer for timed tasks, will run cleanTracker and send exchange command (still need to implement exchange sending)
 		manager.startTasks();
-    	
+    	try(SSLServerSocket secureSock = (SSLServerSocket) ssl_sock_factory.createServerSocket(securePort)) {
+			System.out.println("Starting the EZShare Server.");
+			System.out.println("using secret: "+ serverSecret);
+			System.out.println("using advertised hostname: "+ serverHostname);
+			System.out.println("using connection interval: "+ connectionLimit + " seconds.");
+			System.out.println("bound to secure port: "+ securePort);
+			System.out.println("started.");
+			
+    		SSLSocket sslclient = (SSLSocket) secureSock.accept();
+    		secureCounter++;
+    		InetSocketAddress secureEndpoint = (InetSocketAddress) sslclient.getRemoteSocketAddress();
+    		if (tracker.checkConnection(secureEndpoint.getHostString())) {
+    			//passes tracker check for interval
+    			if (debug) {
+    				System.out.println("Secure client " + secureCounter + " connected.");
+    			}
+    			//start new thread to handle secure connection
+    			if (debug) {
+    				Thread t = new Thread(() -> clientConnection(sslclient, true));
+    				t.start();
+    			} else {
+    				Thread t = new Thread(() -> clientConnection(sslclient, false));
+    				t.start();
+    			}
+    		}
+    	} catch (UnknownHostException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
 		try(ServerSocket server = sock_factory.createServerSocket(serverPort)){
 			System.out.println("Starting the EZShare Server.");
 			System.out.println("using secret: "+ serverSecret);
@@ -165,8 +220,10 @@ public class Server {
     		// Output Stream
     		DataOutputStream output = new DataOutputStream(clientSocket.getOutputStream());
 			while(true){
-				if(input.available() > 0){
+				//if(input.available() > 0){
+				try {
 					String jsonString = input.readUTF();
+					//String jsonString = input.readUTF();
 					// Attempt to convert read data to JSON
 		    		JsonObject commandObject = gson.fromJson(jsonString, JsonObject.class);
 		    		
@@ -264,13 +321,15 @@ public class Server {
 		    			ServerErrorResponse response = new ServerErrorResponse(e.getMessage());
 		    			output.writeUTF(response.toJson(gson));
 		    		}
-		    		
-		    		client.close();
+				} catch(IOException e) {
+					e.printStackTrace();
+					//client.close();
 				}
-			}
-    	} catch (IOException e) {
-			//e.printStackTrace();
-		} 
-	}
+		    		//client.close();
+				}
+	    	} catch (IOException e) {
+				e.printStackTrace();
+			} 
+		}
 
-}
+	}

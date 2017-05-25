@@ -19,6 +19,7 @@ public class ClientCLIOptions {
 		options.addOption("owner", true, "owner");
 		
 		options.addOption("secret", true, "secret");
+		options.addOption("secure", false, "secure connection");
 		options.addOption("servers", true, "server list, host1:port1, host2:port2,...");
 
 		options.addOption("exchange", false, "exchange server list with server");
