@@ -142,9 +142,16 @@ public class Server {
     	//initialize connection tracker
     	ConnectionTracker tracker = new ConnectionTracker(connectionLimit);
 		//initialize task manager for timed tasks
-		TaskManager manager = new TaskManager(tracker, exchangeT, serverRecords);
-		//starts timer for timed tasks, will run cleanTracker and send exchange command (still need to implement exchange sending)
-		manager.startTasks();
+    	if (secure) {
+    		TaskManager manager = new TaskManager(tracker, exchangeT, secureServerRecords);
+    		//starts timer for timed tasks, will run cleanTracker and send exchange command (still need to implement exchange sending)
+    		manager.startTasks();
+    	} else {
+    		TaskManager manager = new TaskManager(tracker, exchangeT, serverRecords);
+    		//starts timer for timed tasks, will run cleanTracker and send exchange command (still need to implement exchange sending)
+    		manager.startTasks();
+    	}
+
 		if (secure) {
 			//initialize SSLsocket factory
 			SSLServerSocketFactory ssl_sock_factory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
