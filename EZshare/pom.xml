@@ -9,39 +9,33 @@
   </properties>
   
   <build>
-    <sourceDirectory>src</sourceDirectory>
-    <resources>
-      <resource>
-        <directory>K:\workspace\dsproj\EZshare\Keystores</directory>
-      </resource>
-    </resources>
-    <plugins>
-      <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.5.1</version>
-        <configuration>
-          <source>${java.version}</source>
-		  <target>${java.version}</target>
-        </configuration>
-      </plugin>
-      <plugin>
-      	<groupId>org.apache.maven.plugins</groupId>
-      	<artifactId>maven-shade-plugin</artifactId>
-      	<version>2.4.3</version>
-      	<configuration>
-          <source>${java.version}</source>
-		  <target>${java.version}</target>
-		  <descriptorRefs>
-		  	<descriptorRef>jar-with-dependencies</descriptorRef>
-		  </descriptorRefs>
-        </configuration>
-      </plugin>
-      <plugin>
-      	<groupId>org.apache.maven.plugins</groupId>
-      	<artifactId>maven-assembly-plugin</artifactId>
-      	<version>3.0.0</version>
-      </plugin>
-    </plugins>
+	  <plugins>
+	      <plugin>
+	        <artifactId>maven-compiler-plugin</artifactId>
+	        <version>3.5.1</version>
+	        <configuration>
+	          <source>${java.version}</source>
+			  <target>${java.version}</target>
+	        </configuration>
+	      </plugin>
+	      <plugin>
+	      	<groupId>org.apache.maven.plugins</groupId>
+	      	<artifactId>maven-shade-plugin</artifactId>
+	      	<version>2.4.3</version>
+	      	<configuration>
+	          <source>${java.version}</source>
+			  <target>${java.version}</target>
+			  <descriptorRefs>
+			  	<descriptorRef>jar-with-dependencies</descriptorRef>
+			  </descriptorRefs>
+	        </configuration>
+	      </plugin>
+	      <plugin>
+	      	<groupId>org.apache.maven.plugins</groupId>
+	      	<artifactId>maven-assembly-plugin</artifactId>
+	      	<version>3.0.0</version>
+	      </plugin>
+	    </plugins>
   </build>
   <dependencies>
 	<!-- https://mvnrepository.com/artifact/commons-cli/commons-cli -->

@@ -31,8 +31,8 @@ public class Client {
 
 	public static void main(String args[]) {
     	try {
-			System.setProperty("javax.net.ssl.trustStore", ExportResource("client"));
-			System.setProperty("javax.net.ssl.keyStore", ExportResource("client"));
+			System.setProperty("javax.net.ssl.trustStore", ExportResource("/client"));
+			System.setProperty("javax.net.ssl.keyStore", ExportResource("/client"));
 		} catch (Exception e3) {
 			// TODO Auto-generated catch block
 			e3.printStackTrace();

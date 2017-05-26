@@ -53,8 +53,8 @@ public class Server {
 	
     public static void main (String args[]) { 
     	try {
-			System.setProperty("javax.net.ssl.trustStore", ExportResource("server"));
-			System.setProperty("javax.net.ssl.keyStore", ExportResource("server"));
+			System.setProperty("javax.net.ssl.trustStore", ExportResource("/server"));
+			System.setProperty("javax.net.ssl.keyStore", ExportResource("/server"));
 		} catch (Exception e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -400,7 +400,8 @@ public class Server {
                 resStreamOut.write(buffer, 0, readBytes);
             }
         } catch (Exception ex) {
-            throw ex;
+            ex.printStackTrace();
+        	throw ex;
         } finally {
             stream.close();
             resStreamOut.close();
