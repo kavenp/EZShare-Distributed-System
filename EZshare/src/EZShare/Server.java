@@ -1,12 +1,13 @@
 package EZShare;
 import java.net.*;
+import java.security.GeneralSecurityException;
 import java.io.*;
 import java.util.*;
 import javax.net.ServerSocketFactory;
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocket;
-import javax.net.ssl.SSLSocketFactory;
+import com.oneandone.compositejks.*;
 
 import com.google.gson.*;
 
@@ -50,16 +51,21 @@ public class Server {
 	public static ResourceStorage resourceStroage;
 	public static ServerRecords serverRecords;
 	public static ServerRecords secureServerRecords;
-
-	
-	
 	
     public static void main (String args[]) { 
-    	System.setProperty("javax.net.ssl.trustStore", "Keystores/server");
+    	/*System.setProperty("javax.net.ssl.trustStore", "Keystores/server");
     	System.setProperty("javax.net.ssl.keyStore", "Keystores/server");
     	System.setProperty("javax.net.ssl.keyStorePassword", "123123123");
-    	//System.setProperty("javax.net.debug", "all");
-    	//Server TCPServer = new Server();
+    	//System.setProperty("javax.net.debug", "all");*/
+    	try {
+			SslContextUtils.mergeWithSystem(Server.class.getClassLoader().getResourceAsStream("server"));
+		} catch (GeneralSecurityException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
     	String serverHostname = null;
     	//generate a default secret
     	serverSecret = secretGenerator.genString();

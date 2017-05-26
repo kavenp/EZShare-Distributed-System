@@ -1,5 +1,6 @@
 package EZShare;
 import java.net.*;
+import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -8,6 +9,7 @@ import javax.net.ssl.SSLSocketFactory;
 
 import java.io.*;
 import com.google.gson.*;
+import com.oneandone.compositejks.*;
 
 import assist.ClientCLIOptions;
 import dao.ExchangeResource;
@@ -29,10 +31,19 @@ public class Client {
 	public static final int defaultSecurePort = 3781;
 
 	public static void main(String args[]) {
-    	System.setProperty("javax.net.ssl.trustStore", "Keystores/client");
+    	/*System.setProperty("javax.net.ssl.trustStore", "Keystores/client");
     	System.setProperty("javax.net.ssl.keyStore", "Keystores/client");
     	System.setProperty("javax.net.ssl.keyStorePassword", "123123123");
-    	//System.setProperty("javax.net.debug", "all");
+    	//System.setProperty("javax.net.debug", "all");*/
+		try {
+			SslContextUtils.mergeWithSystem(Client.class.getClassLoader().getResourceAsStream("client"));
+		} catch (GeneralSecurityException e3) {
+			// TODO Auto-generated catch block
+			e3.printStackTrace();
+		} catch (IOException e3) {
+			// TODO Auto-generated catch block
+			e3.printStackTrace();
+		}
 		// arguments supply message and hostname
 		boolean debug = false;
 		// secure flag
