@@ -54,10 +54,10 @@ public class Server {
 	
 	
     public static void main (String args[]) { 
+    	System.setProperty("javax.net.ssl.trustStore", "Keystores/server");
     	System.setProperty("javax.net.ssl.keyStore", "Keystores/server");
-    	System.setProperty("java.net.ssl.trustStore", "Keystores/server");
     	System.setProperty("javax.net.ssl.keyStorePassword", "123123123");
-    	System.setProperty("javax.net.debug", "all");
+    	//System.setProperty("javax.net.debug", "all");
     	Server TCPServer = new Server();
     	String serverHostname = null;
     	//generate a default secret
