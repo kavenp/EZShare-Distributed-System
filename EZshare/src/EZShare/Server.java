@@ -45,6 +45,7 @@ public class Server {
     
 	private static String serverSecret;
 	private static String HostnamePort;
+	private static String HostnameSecurePort;
 	
 	public static ResourceStorage resourceStroage;
 	public static ServerRecords serverRecords;
@@ -58,13 +59,11 @@ public class Server {
     	System.setProperty("javax.net.ssl.keyStore", "Keystores/server");
     	System.setProperty("javax.net.ssl.keyStorePassword", "123123123");
     	//System.setProperty("javax.net.debug", "all");
-    	Server TCPServer = new Server();
+    	//Server TCPServer = new Server();
     	String serverHostname = null;
     	//generate a default secret
     	serverSecret = secretGenerator.genString();
     	
-    	int counter = 0;
-    	int secureCounter = 0;
     	int exchangeT = defaultExchangeT;
     	int connectionLimit = defaultConnectionLimit;
     	int serverPort = defaultServerPort; 
@@ -81,11 +80,6 @@ public class Server {
     	ServerCLIOptions cliOptions = new ServerCLIOptions();
 		Options options = cliOptions.createOptions();
 		DefaultParser parser = new DefaultParser();
-		
-		//initialize socket factory
-		ServerSocketFactory sock_factory = ServerSocketFactory.getDefault();
-		//initialize SSLsocket factory
-		SSLServerSocketFactory ssl_sock_factory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
 		
 		CommandLine cl;
     	try {
@@ -117,13 +111,33 @@ public class Server {
         	//set secret if flagged
         	serverSecret = cl.getOptionValue("secret", serverSecret);
         	HostnamePort = serverHostname + ":" + Integer.toString(serverPort);
+        	HostnameSecurePort = serverHostname + ":" + Integer.toString(securePort);
         	//returns ezserver string of local hostname and port no.
 	    }
 	    catch(UnknownHostException | ParseException e)
 	    {
 	    	e.printStackTrace();
 	    }
+    	//need final to pass into threads
+    	final int cL = connectionLimit;
+    	final int eT = exchangeT;
+    	final String sH = serverHostname;
+    	final int unsPort = serverPort;
+    	final int sPort = securePort;
+    	final boolean db = debug;
     	
+    	//Listen threads
+    	//Unsecure listener thread
+    	Thread unsecure = new Thread(() -> listenThread(cL, eT, sH, unsPort, db, false));
+    	unsecure.start();
+    	//Secure listener thread
+    	Thread secure = new Thread(() -> listenThread(cL, eT, sH, sPort, db, true));
+    	secure.start();
+    }
+    
+    private static void listenThread(int connectionLimit, int exchangeT, String serverHostname, int port, boolean debug, boolean secure) {
+    	int secureCounter = 0;
+    	int counter = 0;
     	//initialize classes that depend on possible command line arguments here
     	//initialize connection tracker
     	ConnectionTracker tracker = new ConnectionTracker(connectionLimit);
@@ -131,89 +145,85 @@ public class Server {
 		TaskManager manager = new TaskManager(tracker, exchangeT, serverRecords);
 		//starts timer for timed tasks, will run cleanTracker and send exchange command (still need to implement exchange sending)
 		manager.startTasks();
-    	try(SSLServerSocket secureSock = (SSLServerSocket) ssl_sock_factory.createServerSocket(securePort)) {
-			System.out.println("Starting the EZShare Server.");
-			System.out.println("using secret: "+ serverSecret);
-			System.out.println("using advertised hostname: "+ serverHostname);
-			System.out.println("using connection interval: "+ connectionLimit + " seconds.");
-			System.out.println("bound to secure port: "+ securePort);
-			System.out.println("started.");
-			
-			while (true) {
-	    		SSLSocket sslclient = (SSLSocket) secureSock.accept();
-	    		secureCounter++;
-	    		InetSocketAddress secureEndpoint = (InetSocketAddress) sslclient.getRemoteSocketAddress();
-	    		if (tracker.checkConnection(secureEndpoint.getHostString())) {
-	    			//passes tracker check for interval
-	    			if (debug) {
-	    				System.out.println("Secure client " + secureCounter + " connected.");
-	    			}
-	    			//start new thread to handle secure connection
-	    			if (debug) {
-	    				Thread t = new Thread(() -> clientConnection(sslclient, true));
-	    				t.start();
-	    			} else {
-	    				Thread t = new Thread(() -> clientConnection(sslclient, false));
-	    				t.start();
-	    			}
-	    		} else {
-	    			//has tried to connect within interval, reject
-					if (debug) {
-						System.out.println("Secure client " + counter + ": " + secureEndpoint.getHostString() + " Tried to connect within connection interval, rejected.");
-					}
-					sslclient.close();
-	    		}
+		if (secure) {
+			//initialize SSLsocket factory
+			SSLServerSocketFactory ssl_sock_factory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
+			try(SSLServerSocket secureSock = (SSLServerSocket) ssl_sock_factory.createServerSocket(port)) {
+				System.out.println("Starting the EZShare Secure Server.");
+				System.out.println("using secret: "+ serverSecret);
+				System.out.println("using advertised hostname: "+ serverHostname);
+				System.out.println("using connection interval: "+ connectionLimit + " seconds.");
+				System.out.println("bound to secure port: "+ port);
+				System.out.println("started.");
+				
+				while (true) {
+		    		SSLSocket sslclient = (SSLSocket) secureSock.accept();
+		    		secureCounter++;
+		    		InetSocketAddress secureEndpoint = (InetSocketAddress) sslclient.getRemoteSocketAddress();
+		    		if (tracker.checkConnection(secureEndpoint.getHostString())) {
+		    			//passes tracker check for interval
+		    			if (debug) {
+		    				System.out.println("Secure client " + secureCounter + " connected.");
+		    			}
+		    			//start new thread to handle secure connection
+		    			Thread t = new Thread(() -> clientConnection(sslclient, secure, debug));
+		    			t.start();
+
+		    		} else {
+		    			//has tried to connect within interval, reject
+						if (debug) {
+							System.out.println("Secure client " + counter + ": " + secureEndpoint.getHostString() + " Tried to connect within connection interval, rejected.");
+						}
+						sslclient.close();
+		    		}
+				}
+	    	} catch (UnknownHostException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
 			}
-    	} catch (UnknownHostException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		
-		try(ServerSocket server = sock_factory.createServerSocket(serverPort)){
-			System.out.println("Starting the EZShare Server.");
-			System.out.println("using secret: "+ serverSecret);
-			System.out.println("using advertised hostname: "+ serverHostname);
-			System.out.println("using connection interval: "+ connectionLimit + " seconds.");
-			System.out.println("bound to port: "+ serverPort);
-			System.out.println("started.");
-			
-			// Wait for connections.
-			while(true){
-				Socket client = server.accept();
-				counter++;
-				InetSocketAddress endpoint = (InetSocketAddress) client.getRemoteSocketAddress();
-				if (tracker.checkConnection(endpoint.getHostString())) {
-					//passes tracker check for interval
-					if (debug) {
-						System.out.println("Client "+counter+" connected.");
-					}
-					// Start a new thread for a connection
-					if (debug) {	
-						Thread t = new Thread(() -> clientConnection(client, true));
+		} else {
+			//initialize socket factory
+			ServerSocketFactory sock_factory = ServerSocketFactory.getDefault();
+			try(ServerSocket server = sock_factory.createServerSocket(port)){
+				System.out.println("Starting the EZShare Server.");
+				System.out.println("using secret: "+ serverSecret);
+				System.out.println("using advertised hostname: "+ serverHostname);
+				System.out.println("using connection interval: "+ connectionLimit + " seconds.");
+				System.out.println("bound to port: "+ port);
+				System.out.println("started.");
+				
+				// Wait for connections.
+				while(true){
+					Socket client = server.accept();
+					counter++;
+					InetSocketAddress endpoint = (InetSocketAddress) client.getRemoteSocketAddress();
+					if (tracker.checkConnection(endpoint.getHostString())) {
+						//passes tracker check for interval
+						if (debug) {
+							System.out.println("Client "+counter+" connected.");
+						}
+						// Start a new thread for a connection
+						Thread t = new Thread(() -> clientConnection(client, secure, debug));
 						t.start();
 					} else {
-						Thread t = new Thread(() -> clientConnection(client, false));
-						t.start();
+						//has tried to connect within interval, reject
+						if (debug) {
+							System.out.println("Client " + counter + ": " + endpoint.getHostString() + " Tried to connect within connection interval, rejected.");
+						}
+						client.close();
 					}
-				} else {
-					//has tried to connect within interval, reject
-					if (debug) {
-						System.out.println("Client " + counter + ": " + endpoint.getHostString() + " Tried to connect within connection interval, rejected.");
-					}
-					client.close();
 				}
+				
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
-			
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
-		
     }
 	
-    private static void clientConnection(Socket client, boolean debug) {
+    private static void clientConnection(Socket client, boolean secure, boolean debug) {
     	
     	
     	try(Socket clientSocket = client) {
@@ -246,8 +256,11 @@ public class Server {
 		    				}
 		    				result = commandObject.get("resource");
 		    				Resource publishResource = gson.fromJson(result, Resource.class);
-		    				
-		    				service = new PublishService(resourceStroage, serverRecords);
+		    				if (secure) {
+		    					service = new PublishService(resourceStroage, secureServerRecords);
+		    				} else {
+		    					service = new PublishService(resourceStroage, serverRecords);
+		    				}
 		    			    service.response(publishResource, output);
 		    				break;
 		    			
@@ -257,7 +270,12 @@ public class Server {
 		    				}
 		    				result = commandObject.get("resource");
 		    				Resource removeResource = gson.fromJson(result, Resource.class);
-		    				service = new RemoveService(resourceStroage, serverRecords);
+		    				if (secure) {
+		    					service = new RemoveService(resourceStroage, secureServerRecords);
+		    				} else {
+		    					service = new RemoveService(resourceStroage, serverRecords);
+		    				}
+		    				
 		    			    service.response(removeResource, output);
 		    			
 		    				break;
@@ -275,8 +293,11 @@ public class Server {
 		    				}
 		    				result = commandObject.get("resource");
 		    				Resource shareResource = gson.fromJson(result, Resource.class);
-		    				
-		    				service = new ShareService(resourceStroage, serverRecords);
+		    				if (secure) {
+		    					service = new ShareService(resourceStroage, secureServerRecords);
+		    				} else {
+		    					service = new ShareService(resourceStroage, serverRecords);
+		    				}
 		    				service.response(shareResource, output);
 		    				break;
 		    				
@@ -287,9 +308,13 @@ public class Server {
 		    				result = commandObject.get("resourceTemplate");
 		    				boolean relay = commandObject.get("relay").getAsBoolean();
 		    				Resource queryResource = gson.fromJson(result, Resource.class);
-		    				service = new QueryService(resourceStroage, serverRecords);
-		    				
-		    			    service.response(queryResource, output, HostnamePort, relay);
+		    				if (secure) {
+		    					service = new QueryService(resourceStroage, secureServerRecords);
+		    					service.response(queryResource, output, HostnameSecurePort, relay);
+		    				} else {
+			    				service = new QueryService(resourceStroage, serverRecords);			
+			    			    service.response(queryResource, output, HostnamePort, relay);
+		    				}
 		    				break;
 		    			
 		    			case "FETCH":
@@ -298,10 +323,13 @@ public class Server {
 		    				}
 		    				result = commandObject.get("resourceTemplate");
 		    				Resource fetchResource = gson.fromJson(result, Resource.class);
-		    				
-		    				service = new FetchService(resourceStroage, serverRecords);
-		    			    service.response(fetchResource, output, HostnamePort);
-		    			    
+		    				if (secure) {
+		    					service = new FetchService(resourceStroage, secureServerRecords);
+		    					service.response(fetchResource, output, HostnameSecurePort);
+		    				} else {
+			    				service = new FetchService(resourceStroage, serverRecords);
+			    			    service.response(fetchResource, output, HostnamePort);
+		    				}
 		    				break;
 		    				
 		    			case "EXCHANGE":
@@ -309,7 +337,11 @@ public class Server {
 		    					System.out.println("EXCHANGE command: " + jsonString);
 		    				}
 		    				result = commandObject.get("serverList");
-		    				service = new ExchangeService(resourceStroage, serverRecords);
+		    				if (secure) {
+		    					service = new ExchangeService(resourceStroage, secureServerRecords);
+		    				} else {
+		    					service = new ExchangeService(resourceStroage, serverRecords);
+		    				}
 		    			    service.response(result, output);
 		    			    
 		    				break;
@@ -330,9 +362,9 @@ public class Server {
 		    		}
 				} catch(IOException e) {
 					e.printStackTrace();
-					//client.close();
 				}
-		    		//client.close();
+		    		client.close();
+		    		break;
 				}
 	    	} catch (IOException e) {
 				e.printStackTrace();

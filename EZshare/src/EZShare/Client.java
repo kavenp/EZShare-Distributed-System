@@ -86,6 +86,7 @@ public class Client {
 			
 			Resource resource = new Resource(name, description, tags, 
 					uri, channel, owner);
+			
 			Gsonable sendResource = null;
 			
 			if (cl.hasOption("servers")) {
@@ -148,10 +149,11 @@ public class Client {
 		
 		
 		try {
-			System.out.println(ipAddress+"-----"+serverPort);
 			if (secure) {
+				System.out.println(ipAddress+"-----"+securePort);
 				s = (SSLSocket) ssl_sock_factory.createSocket(ipAddress, securePort);
 			} else {
+				System.out.println(ipAddress+"-----"+serverPort);
 				s = new Socket(ipAddress, serverPort);
 			}
 			//System.out.println("Connection Established");
