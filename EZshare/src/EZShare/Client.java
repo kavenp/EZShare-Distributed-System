@@ -29,11 +29,10 @@ public class Client {
 	public static final int defaultSecurePort = 3781;
 
 	public static void main(String args[]) {
-    	System.setProperty("javax.net.ssl.keyStore", "clientKeystore/clientkeystore.jks");
-    	System.setProperty("java.net.ssl.trustStore", "clientKeystore/clientkeystore.jks");
-    	System.setProperty("javax.net.ssl.keyStorePassword", "comp90015");
-    	System.setProperty("java.net.ssl.trustStorePassword", "comp90015");
-    	System.setProperty("javax.net.debug", "all");
+    	System.setProperty("javax.net.ssl.keyStore", "Keystores/client");
+    	System.setProperty("java.net.ssl.trustStore", "Keystores/client");
+    	System.setProperty("javax.net.ssl.keyStorePassword", "123123123");
+    	//System.setProperty("javax.net.debug", "all");
 		// arguments supply message and hostname
 		boolean debug = false;
 		// secure flag
