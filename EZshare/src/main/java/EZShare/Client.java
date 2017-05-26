@@ -1,6 +1,5 @@
 package EZShare;
 import java.net.*;
-import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
