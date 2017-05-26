@@ -55,9 +55,9 @@ public class Server {
 	
     public static void main (String args[]) { 
     	System.setProperty("javax.net.ssl.keyStore", "serverKeystore/serverkeystore.jks");
-    	//System.setProperty("java.net.ssl.trustStore", "serverKeystore/serverkeystore.jks");
+    	System.setProperty("java.net.ssl.trustStore", "serverKeystore/serverkeystore.jks");
     	System.setProperty("javax.net.ssl.keyStorePassword", "comp90015");
-    	//System.setProperty("java.net.ssl.trustStorePassword", "comp90015");
+    	System.setProperty("java.net.ssl.trustStorePassword", "comp90015");
     	System.setProperty("javax.net.debug", "all");
     	Server TCPServer = new Server();
     	String serverHostname = null;
