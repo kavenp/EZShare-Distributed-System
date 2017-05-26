@@ -7,7 +7,6 @@ import javax.net.ServerSocketFactory;
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocket;
-import com.oneandone.compositejks.*;
 
 import com.google.gson.*;
 
@@ -53,19 +52,15 @@ public class Server {
 	public static ServerRecords secureServerRecords;
 	
     public static void main (String args[]) { 
-    	/*System.setProperty("javax.net.ssl.trustStore", "Keystores/server");
-    	System.setProperty("javax.net.ssl.keyStore", "Keystores/server");
-    	System.setProperty("javax.net.ssl.keyStorePassword", "123123123");
-    	//System.setProperty("javax.net.debug", "all");*/
     	try {
-			SslContextUtils.mergeWithSystem(Server.class.getClassLoader().getResourceAsStream("server"));
-		} catch (GeneralSecurityException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		} catch (IOException e1) {
+			System.setProperty("javax.net.ssl.trustStore", ExportResource("server"));
+			System.setProperty("javax.net.ssl.keyStore", ExportResource("server"));
+		} catch (Exception e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
+    	System.setProperty("javax.net.ssl.keyStorePassword", "123123123");
+    	//System.setProperty("javax.net.debug", "all");
     	String serverHostname = null;
     	//generate a default secret
     	serverSecret = secretGenerator.genString();
@@ -383,5 +378,34 @@ public class Server {
 				e.printStackTrace();
 			} 
 		}
+    
+    static public String ExportResource(String resourceName) throws Exception {
+        InputStream stream = null;
+        OutputStream resStreamOut = null;
+        String jarFolder;
+        try {
+            stream = Server.class.getResourceAsStream(resourceName);
+            //note that each / is a directory down in the "jar tree" been the jar the root of the tree
+            if(stream == null) {
+                throw new Exception("Cannot get resource \"" + resourceName + "\" from Jar file.");
+            }
+
+            int readBytes;
+            byte[] buffer = new byte[4096];
+            jarFolder = new File
+            		(Server.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath())
+            		.getParentFile().getPath().replace('\\', '/');
+            resStreamOut = new FileOutputStream(jarFolder + resourceName);
+            while ((readBytes = stream.read(buffer)) > 0) {
+                resStreamOut.write(buffer, 0, readBytes);
+            }
+        } catch (Exception ex) {
+            throw ex;
+        } finally {
+            stream.close();
+            resStreamOut.close();
+        }
+        return jarFolder + resourceName;
+    }
 
 	}

@@ -9,7 +9,6 @@ import javax.net.ssl.SSLSocketFactory;
 
 import java.io.*;
 import com.google.gson.*;
-import com.oneandone.compositejks.*;
 
 import assist.ClientCLIOptions;
 import dao.ExchangeResource;
@@ -31,19 +30,15 @@ public class Client {
 	public static final int defaultSecurePort = 3781;
 
 	public static void main(String args[]) {
-    	/*System.setProperty("javax.net.ssl.trustStore", "Keystores/client");
-    	System.setProperty("javax.net.ssl.keyStore", "Keystores/client");
-    	System.setProperty("javax.net.ssl.keyStorePassword", "123123123");
-    	//System.setProperty("javax.net.debug", "all");*/
-		try {
-			SslContextUtils.mergeWithSystem(Client.class.getClassLoader().getResourceAsStream("client"));
-		} catch (GeneralSecurityException e3) {
-			// TODO Auto-generated catch block
-			e3.printStackTrace();
-		} catch (IOException e3) {
+    	try {
+			System.setProperty("javax.net.ssl.trustStore", ExportResource("client"));
+			System.setProperty("javax.net.ssl.keyStore", ExportResource("client"));
+		} catch (Exception e3) {
 			// TODO Auto-generated catch block
 			e3.printStackTrace();
 		}
+    	System.setProperty("javax.net.ssl.keyStorePassword", "123123123");
+    	//System.setProperty("javax.net.debug", "all");
 		// arguments supply message and hostname
 		boolean debug = false;
 		// secure flag
@@ -261,6 +256,35 @@ public class Client {
 				}
 		}
 	}
+	
+    static public String ExportResource(String resourceName) throws Exception {
+        InputStream stream = null;
+        OutputStream resStreamOut = null;
+        String jarFolder;
+        try {
+            stream = Client.class.getResourceAsStream(resourceName);
+            //note that each / is a directory down in the "jar tree" been the jar the root of the tree
+            if(stream == null) {
+                throw new Exception("Cannot get resource \"" + resourceName + "\" from Jar file.");
+            }
+
+            int readBytes;
+            byte[] buffer = new byte[4096];
+            jarFolder = new File
+            		(Client.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath())
+            		.getParentFile().getPath().replace('\\', '/');
+            resStreamOut = new FileOutputStream(jarFolder + resourceName);
+            while ((readBytes = stream.read(buffer)) > 0) {
+                resStreamOut.write(buffer, 0, readBytes);
+            }
+        } catch (Exception ex) {
+            throw ex;
+        } finally {
+            stream.close();
+            resStreamOut.close();
+        }
+        return jarFolder + resourceName;
+    }
 	
 	public static int setChunkSize(long fileSizeRemaining){
 		// Determine the chunkSize

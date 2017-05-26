@@ -44,11 +44,6 @@
     </plugins>
   </build>
   <dependencies>
-  	<dependency>
-  		<groupId>com.oneandone</groupId>
-  		<artifactId>composite-jks</artifactId>
-  		<version>1.0</version>
-  	</dependency>
 	<!-- https://mvnrepository.com/artifact/commons-cli/commons-cli -->
 	<dependency>
 	    <groupId>commons-cli</groupId>
