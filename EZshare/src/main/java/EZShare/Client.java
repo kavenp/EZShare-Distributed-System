@@ -10,6 +10,8 @@ import java.io.*;
 import com.google.gson.*;
 
 import assist.ClientCLIOptions;
+import assist.ReceiveThread;
+import assist.SendThread;
 import dao.ExchangeResource;
 import dao.FetchResource;
 import dao.Gsonable;
@@ -233,6 +235,10 @@ public class Client {
 				downloadingFile.close();
 			}
 			
+			if(cl.hasOption("subscribe")){
+				new Thread(new SendThread(s)).start();
+				new Thread(new ReceiveThread(s)).start();
+			}
 			
 			while(true) {
 				String data = in.readUTF(); // read a line of data from the stream
@@ -240,6 +246,8 @@ public class Client {
 					System.out.println("Received: " + data);
 				}
 			}
+			
+			
 		} catch (UnknownHostException e) {
 			System.out.println("Socket:" + e.getMessage());
 		} catch (EOFException e) {

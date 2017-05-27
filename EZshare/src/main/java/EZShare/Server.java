@@ -30,6 +30,7 @@ import server_service.QueryService;
 import server_service.RemoveService;
 import server_service.Service;
 import server_service.ShareService;
+import server_service.SubscribeService;
  
 public class Server {
     //the default server port
@@ -353,7 +354,22 @@ public class Server {
 		    			    service.response(result, output);
 		    			    
 		    				break;
-		    			
+		    			case "SUBSCRIBE":
+		    				if (debug) {
+		    					System.out.println("EXCHANGE command: " + jsonString);
+		    				}
+		    				result = commandObject.get("resourceTemplate");
+		    				boolean relay2 = commandObject.get("relay").getAsBoolean();
+		    				String id = commandObject.get("id").getAsString();
+		    				Resource subscribeResource = gson.fromJson(result, Resource.class);
+		    				if (secure) {
+		    					service = new SubscribeService(resourceStroage, secureServerRecords);
+		    					service.response(subscribeResource, output, HostnameSecurePort, relay2);
+		    				} else {
+			    				service = new SubscribeService(resourceStroage, serverRecords);			
+			    			    service.response(subscribeResource, output, HostnamePort, relay2);
+		    				}
+		    				break;
 		    			default:
 		    				// default error message for the command
 		    				Response response = new ServerErrorResponse();
