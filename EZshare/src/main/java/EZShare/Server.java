@@ -21,6 +21,7 @@ import assist.SendThread;
 import assist.ServerCLIOptions;
 import assist.ServerErrorResponse;
 import assist.ServerRecords;
+import assist.SubscribeSuccessResponse;
 import assist.Subscription;
 import assist.TaskManager;
 
@@ -387,6 +388,7 @@ public class Server {
 							String id = commandObject.get("id").getAsString();
 							Resource subscribeResource = gson.fromJson(result, Resource.class);
 							Subscription subscription = new Subscription(id, subscribeResource, input, output, clientSocket);
+							SubscribeSuccessResponse successResponse = new SubscribeSuccessResponse(id);
 							subscriptions.add(subscription);
 							if (secure) {
 								service = new SubscribeService(resourceStroage, secureServerRecords);
@@ -395,6 +397,7 @@ public class Server {
 								service = new SubscribeService(resourceStroage, serverRecords);
 								service.response(subscribeResource, output, HostnamePort, relay2, id);
 							}
+							output.writeUTF(successResponse.toJson(gson));
 							while(true){
 								
 								output.writeUTF(input.readUTF());

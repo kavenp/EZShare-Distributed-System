@@ -239,7 +239,7 @@ public class Client {
 			}
 			
 			if(cl.hasOption("subscribe")){
-				System.out.println("jin lai mei");
+				//System.out.println("jin lai mei");
 				Thread t1 = new Thread(new ReceiveThread(s));
 				Thread t2 = new Thread(new SendThread(s,id));
 				try {
@@ -258,7 +258,7 @@ public class Client {
 			while(true) {
 				String data = in.readUTF(); // read a line of data from the stream
 				if (debug) {
-					System.out.println("Received???: " + data);
+					System.out.println("Received: " + data);
 				}
 			}
 		
