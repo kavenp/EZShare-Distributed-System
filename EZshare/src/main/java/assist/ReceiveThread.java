@@ -30,6 +30,7 @@ public class ReceiveThread extends Thread {
 	public void recieve() {
 		String msg = null;
 		try {
+			//System.out.println("!!!!!");
 			msg = dis.readUTF();
 			System.out.println("Received: " + msg);
 		} catch (IOException e) {

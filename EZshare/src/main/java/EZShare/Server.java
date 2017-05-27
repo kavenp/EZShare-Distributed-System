@@ -282,9 +282,10 @@ public class Server {
 							}
 							service.response(publishResource, output);
 							for(Subscription subscription : subscriptions){
-								if(hit){
-									subscription.getDos().writeUTF(publishResource.toJson(gson));
-								}
+
+								System.out.println("111:"+publishResource.toJson(gson));
+								subscription.getDos().writeUTF(publishResource.toJson(gson));
+								
 							}
 							break;
 
@@ -324,9 +325,8 @@ public class Server {
 							}
 							service.response(shareResource, output);
 							for(Subscription subscription : subscriptions){
-								if(hit){
-									subscription.getDos().writeUTF(publishResource.toJson(gson));
-								}
+								subscription.getDos().writeUTF(shareResource.toJson(gson));
+								
 							}
 							break;
 
@@ -392,8 +392,10 @@ public class Server {
 								service.response(subscribeResource, output, HostnamePort, relay2, id);
 							}
 							while(true){
-								input.readUTF();
+								
+								output.writeUTF(input.readUTF());
 							}
+							
 							
 						case "UNSUBSCRIBE":
 							if(debug){

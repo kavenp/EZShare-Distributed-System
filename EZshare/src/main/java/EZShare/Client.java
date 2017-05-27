@@ -239,11 +239,22 @@ public class Client {
 			}
 			
 			if(cl.hasOption("subscribe")){
-				
-				new Thread(new SendThread(s,id)).start();
-				new Thread(new ReceiveThread(s)).start();
+
+				Thread t1 = new Thread(new ReceiveThread(s));
+				Thread t2 = new Thread(new SendThread(s,id));
+				try {
+					t1.join();
+				} catch (InterruptedException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				try {
+					t2.join();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
-			
 			while(true) {
 				String data = in.readUTF(); // read a line of data from the stream
 				if (debug) {
