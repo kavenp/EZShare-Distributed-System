@@ -282,7 +282,7 @@ public class Server {
 							}
 							service.response(publishResource, output);
 							for(Subscription subscription : subscriptions){
-								if(hit){
+								if(publishResource.match(subscription.getResource())){
 									subscription.getDos().writeUTF(publishResource.toJson(gson));
 								}
 							}
@@ -324,8 +324,8 @@ public class Server {
 							}
 							service.response(shareResource, output);
 							for(Subscription subscription : subscriptions){
-								if(hit){
-									subscription.getDos().writeUTF(publishResource.toJson(gson));
+								if(shareResource.match(subscription.getResource())){
+									subscription.getDos().writeUTF(shareResource.toJson(gson));
 								}
 							}
 							break;
@@ -376,7 +376,7 @@ public class Server {
 							break;
 						case "SUBSCRIBE":
 							if (debug) {
-								System.out.println("EXCHANGE command: " + jsonString);
+								System.out.println("SUBSCRIBE command: " + jsonString);
 							}
 							result = commandObject.get("resourceTemplate");
 							boolean relay2 = commandObject.get("relay").getAsBoolean();
