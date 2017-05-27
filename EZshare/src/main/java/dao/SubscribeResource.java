@@ -9,14 +9,14 @@ public class SubscribeResource extends Gsonable {
 	private Resource resourceTemplate;
 	private String id;
 	
-	public SubscribeResource(boolean relay, Resource resourceTemplate) {
+	
+	public SubscribeResource(boolean relay, Resource resourceTemplate, String id) {
 		this.command = "SUBSCRIBE";
 		this.relay = relay;
 		this.resourceTemplate = resourceTemplate;
-		this.id = new RandomString(10).genString();
+		this.id = id;
 		// TODO Auto-generated constructor stub
 	}
-
 
 	@Override
 	public String toJson(Gson gson) {

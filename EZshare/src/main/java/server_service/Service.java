@@ -51,6 +51,15 @@ public class Service {
 		// TODO Auto-generated method stub
 		
 	}
+
+
+
+
+	public void response(Resource subscribeResource, DataOutputStream output, String hostnamePort, boolean relay2,
+			String id) {
+		// TODO Auto-generated method stub
+		
+	}
 	
 	
 }

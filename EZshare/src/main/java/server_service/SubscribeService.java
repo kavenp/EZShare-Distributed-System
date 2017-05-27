@@ -22,6 +22,7 @@ import assist.ServerSuccessResponse;
 import dao.QueryResource;
 import dao.Resource;
 import dao.ServerInfo;
+import dao.SubscribeResource;
 
 public class SubscribeService extends Service {
 	public SubscribeService(ResourceStorage resourceStroage, ServerRecords serverRecords) {
@@ -29,7 +30,8 @@ public class SubscribeService extends Service {
 		// TODO Auto-generated constructor stub
 	}
 	
-	public void response(Resource resource, DataOutputStream out, String HostnamePort, boolean relay){
+	public void response(Resource resource, DataOutputStream out, String HostnamePort, boolean relay
+			, String id){
 		Response response = null;
 		Gson gson = new GsonBuilder().serializeNulls().create();
 		ArrayList<Resource> matchResources = new ArrayList<Resource>();
@@ -38,36 +40,13 @@ public class SubscribeService extends Service {
 		try {
 			checkResource(resource);
 			if(relay){
-				try {
-					out.writeUTF(new ServerSuccessResponse().toJson(gson));
-				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
 				for(ServerInfo server : serverRecords.getServers()){
 					try {
 						Socket s = new Socket(server.getHostname(),server.getPort());
-						QueryResource sendResource = new QueryResource(false, resource);
+						SubscribeResource sendResource = new SubscribeResource(false, resource, id);
 						DataInputStream otherIn = new DataInputStream(s.getInputStream());
 						DataOutputStream otherOut = new DataOutputStream(s.getOutputStream());
 						otherOut.writeUTF(sendResource.toJson(gson));
-						otherIn.readUTF();
-						while(true) {	
-							try {
-								String temp = otherIn.readUTF();
-								JsonObject json = gson.fromJson(temp, JsonObject.class);
-								JsonElement resultsize = json.get("resultSize");
-								if (resultsize == null) {
-									//not resultsize
-									out.writeUTF(temp);
-								} else {
-									//is resultsize
-									result += resultsize.getAsInt();
-								}	
-							} catch (EOFException e) {
-									break;
-							}
-						}
 					
 					} catch (UnknownHostException e) {
 						// TODO Auto-generated catch block
@@ -78,39 +57,7 @@ public class SubscribeService extends Service {
 					}
 				}
 			}
-			
-			matchResources = resourceStroage.getMatchingResources(resource, HostnamePort);
-			
-			for(Resource eachResource : matchResources){
-				try {
-					Resource newResource = new Resource();
-					newResource.setChannel(eachResource.getChannel());
-					newResource.setDescription(eachResource.getDescription());
-					newResource.setEzserver(HostnamePort);
-					newResource.setName(eachResource.getName());
-					newResource.setTags(eachResource.getTags());
-					newResource.setUri(eachResource.getUri());
-					if(eachResource.getOwner() != ""){
-						newResource.setOwner("*");
-					}else{
-						newResource.setOwner("");
-					}
-					out.writeUTF(newResource.toJson(gson));
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-			result += matchResources.size();
-			JsonObject resultSize = new JsonObject();
-			resultSize.addProperty("resultSize", result);
-			
-			try {
-				out.writeUTF(resultSize.toString());
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+	
 		} catch (MyException e) {
 			// TODO Auto-generated catch block
 			response = new ServerErrorResponse(e.getMessage());

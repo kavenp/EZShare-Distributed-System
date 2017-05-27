@@ -10,6 +10,7 @@ import java.io.*;
 import com.google.gson.*;
 
 import assist.ClientCLIOptions;
+import assist.RandomString;
 import assist.ReceiveThread;
 import assist.SendThread;
 import dao.ExchangeResource;
@@ -48,6 +49,7 @@ public class Client {
 		int serverPort = defaultServerPort;
 		int securePort = defaultSecurePort;
 		String ipAddress = null;
+		String id = null;
 		ArrayList<ServerInfo> exchangeServers = new ArrayList<ServerInfo>();
 		try {
 			ipAddress = InetAddress.getLocalHost().getHostName();
@@ -90,6 +92,7 @@ public class Client {
 			String channel = cl.getOptionValue("channel", "");
 			String owner = cl.getOptionValue("owner", "");
 			
+			id = InetAddress.getLocalHost()+"->"+ipAddress;
 			
 			Resource resource = new Resource(name, description, tags, 
 					uri, channel, owner);
@@ -137,7 +140,7 @@ public class Client {
 			}
 			if(cl.hasOption("subscribe")){
 				boolean relay = true;
-				sendResource = new SubscribeResource(relay, resource);
+				sendResource = new SubscribeResource(relay, resource, id);
 			}
 			try {
 				clJson = sendResource.toJson(gson);
@@ -145,7 +148,7 @@ public class Client {
 				System.out.println("No arguments given");
 			}
 
-		} catch (ParseException e1) {
+		} catch (ParseException | UnknownHostException e1) {
 			// TODO Auto-generated catch block
 			System.out.println("Unrecognized arguments, please check your command");
 			System.exit(0);
@@ -172,7 +175,7 @@ public class Client {
 			out.writeUTF(clJson); // UTF is a string encoding see Sn. 4.4
 			
 			out.flush();
-			
+		
 			
 			if(cl.hasOption("fetch")){
 				String message1 = in.readUTF();
@@ -236,7 +239,8 @@ public class Client {
 			}
 			
 			if(cl.hasOption("subscribe")){
-				new Thread(new SendThread(s)).start();
+				
+				new Thread(new SendThread(s,id)).start();
 				new Thread(new ReceiveThread(s)).start();
 			}
 			
@@ -246,7 +250,7 @@ public class Client {
 					System.out.println("Received: " + data);
 				}
 			}
-			
+		
 			
 		} catch (UnknownHostException e) {
 			System.out.println("Socket:" + e.getMessage());

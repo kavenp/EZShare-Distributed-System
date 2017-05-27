@@ -25,6 +25,7 @@ public class PublishService extends Service {
 		try {
 			checkResource(resource);
 			if (resourceStroage.checkResource(resource.getResourceKey()) == true) {
+				
 				resourceStroage.updateResource(resource);
 			}
 			if (resourceStroage.checkOwner(resource) == false) {
