@@ -141,7 +141,7 @@ public class ResourceStorage {
 
 /* Matches if template tags are empty or if candidate tags contains any
  * tag from template tags */
-private boolean matchTags(ArrayList<String> tTags, ArrayList<String> cTags) {
+public static boolean matchTags(ArrayList<String> tTags, ArrayList<String> cTags) {
 	if (tTags.isEmpty()) {
 		//when template tags list is empty match everything
 		return true;

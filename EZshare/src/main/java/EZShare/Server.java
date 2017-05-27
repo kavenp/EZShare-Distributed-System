@@ -283,9 +283,10 @@ public class Server {
 							service.response(publishResource, output);
 							for(Subscription subscription : subscriptions){
 
-								System.out.println("111:"+publishResource.toJson(gson));
-								subscription.getDos().writeUTF(publishResource.toJson(gson));
-								
+								if(publishResource.match(subscription.getResource())){
+									subscription.getDos().writeUTF(publishResource.toJson(gson));
+								}
+
 							}
 							break;
 
@@ -324,9 +325,12 @@ public class Server {
 								service = new ShareService(resourceStroage, serverRecords);
 							}
 							service.response(shareResource, output);
-							for(Subscription subscription : subscriptions){
-								subscription.getDos().writeUTF(shareResource.toJson(gson));
-								
+							for(Subscription subscription : subscriptions){							
+
+								if(shareResource.match(subscription.getResource())){
+									subscription.getDos().writeUTF(shareResource.toJson(gson));
+								}
+
 							}
 							break;
 
@@ -376,7 +380,7 @@ public class Server {
 							break;
 						case "SUBSCRIBE":
 							if (debug) {
-								System.out.println("EXCHANGE command: " + jsonString);
+								System.out.println("SUBSCRIBE command: " + jsonString);
 							}
 							result = commandObject.get("resourceTemplate");
 							boolean relay2 = commandObject.get("relay").getAsBoolean();

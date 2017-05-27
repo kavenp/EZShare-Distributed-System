@@ -32,7 +32,7 @@ public class ReceiveThread extends Thread {
 		try {
 			//System.out.println("!!!!!");
 			msg = dis.readUTF();
-			System.out.println("Received: " + msg);
+			System.out.println("Received!!!!!: " + msg);
 		} catch (IOException e) {
 			isRunning = false;
 			try {

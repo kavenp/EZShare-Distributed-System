@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import com.google.gson.Gson;
 
+import assist.ResourceStorage;
 import assist.Tuple;
 
 
@@ -32,6 +33,64 @@ public class Resource extends Gsonable{
 		this.owner = owner;
 		this.ezserver = null;
 	}
+	
+	public boolean match (Resource template) {
+		if(template.getChannel().equals(this.getChannel()))
+		{
+			if(template.getOwner() != "")
+			{
+				if(template.getOwner().equals(this.getOwner()) 
+					&& ResourceStorage.matchTags(template.getTags(), this.getTags()))
+				{
+					if(template.getUri() != "")
+					{
+						if( template.getUri().equals(this.getUri()) && 
+							(template.getName().equals("") && template.getDescription().equals(""))
+							|| this.getName().contains(template.getName()) || 
+							this.getDescription().contains(template.getDescription())) 
+						{
+							return true;
+						}
+					}else
+					{
+						if( template.getUri().equals(this.getUri()) && 
+							(template.getName().equals("") && template.getDescription().equals(""))
+							|| this.getName().contains(template.getName()) || 
+							this.getDescription().contains(template.getDescription())) 
+						{
+							return true;
+						}
+					}
+				}
+			}else
+			{
+				if(ResourceStorage.matchTags(template.getTags(), this.getTags()))
+				{
+					if(template.getUri() != "")
+					{
+						if( template.getUri().equals(this.getUri()) && 
+							(template.getName().equals("") && template.getDescription().equals(""))
+							|| this.getName().contains(template.getName()) || 
+							this.getDescription().contains(template.getDescription()))
+						{
+							return true;
+						}
+					}else
+					{
+						if( template.getUri().equals(this.getUri()) && 
+							(template.getName().equals("") && template.getDescription().equals(""))
+							|| this.getName().contains(template.getName()) || 
+							this.getDescription().contains(template.getDescription( )))
+						{
+							return true;
+						}
+					}
+				}
+			}
+		}
+		return false;
+	}
+		
 	
 	public Tuple<String, String, String> getResourceKey() {
 		return new Tuple<String, String, String>(owner,channel,uri);
